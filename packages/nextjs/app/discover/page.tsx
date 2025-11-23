@@ -8,7 +8,9 @@ import Navbar from "../components/Navbar";
 import ShareButtons from "../components/ShareButtons";
 import { type Question, useVoting } from "../hooks/useVoting";
 import { Theme } from "@radix-ui/themes";
-import { ArrowRight, Clock as ClockIcon, Filter, Globe2, Lock, Search, Trash2 } from "lucide-react";
+import { ArrowRight, Clock as ClockIcon, Filter, Globe2, Lock, Search, Sparkles, Trash2 } from "lucide-react";
+import { useAccount } from "wagmi";
+import { notification } from "~~/utils/helper/notification";
 
 interface QuestionEntry {
   id: number;
@@ -42,10 +44,19 @@ const PollCard = ({ entry, onArchive }: { entry: QuestionEntry; onArchive?: (id:
 
   const handleCopy = () => {
     if (!shareUrl) return;
-    navigator.clipboard?.writeText(shareUrl).catch(() => {});
+    navigator.clipboard
+      ?.writeText(shareUrl)
+      .then(() => notification.success("Copied To Clipboard!"))
+      .catch(() => notification.error("Unable to copy link"));
   };
 
   const [confirmArchive, setConfirmArchive] = useState(false);
+
+  const shareControls = isPrivate ? (
+    <ShareButtons onCopy={handleCopy} />
+  ) : (
+    <ShareButtons onShareX={handleShare("x")} onShareFarcaster={handleShare("farcaster")} />
+  );
 
   return (
     <div className="group relative overflow-hidden rounded-[28px] border border-white/10 bg-gradient-to-b from-[#0b0b0b]/90 via-[#0d0d0d]/70 to-[#0b0b0b]/90 p-5 shadow-[0_20px_50px_rgba(0,0,0,0.55)] transition hover:-translate-y-1 hover:border-white/20">
@@ -55,23 +66,9 @@ const PollCard = ({ entry, onArchive }: { entry: QuestionEntry; onArchive?: (id:
       />
       <div className="absolute inset-x-4 bottom-0 h-24 bg-gradient-to-t from-black/70 to-transparent pointer-events-none" />
 
-      <div className="absolute top-3 right-3 z-20 flex items-center gap-2">
-        <button
-          type="button"
-          onClick={() => setConfirmArchive(true)}
-          className="rounded-full border border-red-400/40 bg-red-500/15 p-2 text-red-200 shadow-[0_8px_25px_rgba(239,68,68,0.35)] transition hover:-translate-y-0.5 hover:bg-red-500/25"
-          title="Archive this poll"
-        >
-          <Trash2 className="h-4 w-4" />
-        </button>
-        {isPrivate ? (
-          <ShareButtons onCopy={handleCopy} />
-        ) : (
-          <ShareButtons onShareX={handleShare("x")} onShareFarcaster={handleShare("farcaster")} />
-        )}
-      </div>
+      <div className="absolute right-3 top-3 z-20">{shareControls}</div>
 
-      <div className="relative flex items-start gap-3 pb-3">
+      <div className="relative flex flex-col gap-3 pb-3 pt-8 sm:flex-row sm:items-start sm:pt-3">
         <img
           src={creatorAvatar}
           alt="creator avatar"
@@ -113,16 +110,26 @@ const PollCard = ({ entry, onArchive }: { entry: QuestionEntry; onArchive?: (id:
         </div>
       </div>
 
-      <div className="relative mt-4 flex items-center justify-between">
-        <div className="text-[11px] uppercase tracking-[0.32em] text-gray-500">
+      <div className="relative mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="order-2 line-clamp-1 text-[11px] uppercase tracking-[0.32em] text-gray-500 sm:order-1 sm:flex-1">
           {isPrivate ? "Secure link · Encrypted voters" : "Discoverable · Public board"}
         </div>
-        <Link
-          href={`/vote?questionId=${id}`}
-          className="inline-flex items-center gap-2 rounded-full bg-[#ffd208] px-4 py-2 text-xs font-semibold text-black shadow-[0_10px_30px_rgba(255,210,8,0.3)] transition hover:-translate-y-0.5"
-        >
-          View &amp; vote <ArrowRight className="h-4 w-4" />
-        </Link>
+        <div className="order-1 flex w-full items-center justify-end gap-3 self-end sm:order-2 sm:w-auto sm:self-auto">
+          <button
+            type="button"
+            onClick={() => setConfirmArchive(true)}
+            className="inline-flex items-center gap-1.5 rounded-full border border-transparent px-3 py-1.5 text-xs font-semibold text-gray-400 transition hover:border-red-400/40 hover:text-red-400"
+          >
+            <Trash2 className="h-4 w-4" />
+            Archive
+          </button>
+          <Link
+            href={`/vote?questionId=${id}`}
+            className="inline-flex items-center gap-2 rounded-full bg-[#ffd208] px-4 py-2 text-xs font-semibold text-black shadow-[0_10px_30px_rgba(255,210,8,0.3)] transition hover:-translate-y-0.5"
+          >
+            View &amp; vote <ArrowRight className="h-4 w-4" />
+          </Link>
+        </div>
       </div>
       {confirmArchive && (
         <div className="absolute inset-0 z-30 flex flex-col items-center justify-center gap-4 rounded-[28px] bg-black/80 px-6 text-center text-white backdrop-blur-md transition">
@@ -158,6 +165,8 @@ const ARCHIVE_STORAGE_KEY = "shadow-archived-polls";
 
 export default function DiscoverPage() {
   const { questionsCount, getQuestion } = useVoting();
+  const { address } = useAccount();
+  const normalizedAddress = useMemo(() => address?.toLowerCase(), [address]);
   const [query, setQuery] = useState("");
   const [sort, setSort] = useState<"latest" | "deadline">("latest");
   const [filterType, setFilterType] = useState<"all" | "public" | "private">("all");
@@ -212,6 +221,13 @@ export default function DiscoverPage() {
       list = list.filter(entry => !archivedIds.includes(entry.id));
     }
 
+    list = list.filter(entry => {
+      const isPrivate = entry.data.question.startsWith("🔒");
+      if (!isPrivate) return true;
+      const creatorAddress = entry.data.createdBy.toLowerCase();
+      return Boolean(normalizedAddress) && creatorAddress === normalizedAddress;
+    });
+
     if (query) {
       const q = query.toLowerCase();
       list = list.filter(entry => {
@@ -234,11 +250,49 @@ export default function DiscoverPage() {
     });
 
     return list;
-  }, [archivedIds, entries, query, sort, filterType]);
+  }, [archivedIds, entries, query, sort, filterType, normalizedAddress]);
+
+  const { liveEntries, expiredEntries } = useMemo(() => {
+    const currentTime = Math.floor(Date.now() / 1000);
+    const live: QuestionEntry[] = [];
+    const expired: QuestionEntry[] = [];
+    filteredEntries.forEach(entry => {
+      if (entry.data.deadline > currentTime) {
+        live.push(entry);
+      } else {
+        expired.push(entry);
+      }
+    });
+    return { liveEntries: live, expiredEntries: expired };
+  }, [filteredEntries]);
 
   const handleArchive = useCallback((pollId: number) => {
     setArchivedIds(prev => (prev.includes(pollId) ? prev : [...prev, pollId]));
   }, []);
+
+  const renderPollGrid = (list: QuestionEntry[], emptyLabel: string) => {
+    if (loading) {
+      return (
+        <div className="rounded-2xl border border-white/10 bg-black/40 px-6 py-12 text-center text-white/70">
+          Loading polls…
+        </div>
+      );
+    }
+    if (!list.length) {
+      return (
+        <div className="col-span-full flex min-h-[180px] flex-col items-center justify-center rounded-[32px] border border-white/10 bg-gradient-to-br from-black/70 via-black/60 to-black/70 px-6 text-center text-sm text-gray-300 shadow-[0_18px_45px_rgba(0,0,0,0.4)]">
+          <Sparkles className="mb-2 h-6 w-6 text-[#ffd208]" />
+          <p className="max-w-sm text-base font-medium text-white/80">{emptyLabel}</p>
+          <p className="mt-1 text-xs uppercase tracking-[0.35em] text-gray-500">Check back soon</p>
+        </div>
+      );
+    }
+    return list.map(entry => (
+      <div key={entry.id} className="fade-card">
+        <PollCard entry={entry} onArchive={handleArchive} />
+      </div>
+    ));
+  };
 
   return (
     <Theme
@@ -320,24 +374,31 @@ export default function DiscoverPage() {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
-              {loading && (
-                <div className="rounded-2xl border border-white/10 bg-black/40 px-6 py-12 text-center text-white/70">
-                  Loading polls…
+            <section className="space-y-4">
+              <div className="flex flex-col gap-1 text-white sm:flex-row sm:items-end sm:justify-between">
+                <div>
+                  <p className="text-xs uppercase tracking-[0.45em] text-[#ffd208]/90">Live votes</p>
+                  <h2 className="text-2xl font-semibold">Active polls</h2>
                 </div>
-              )}
-              {!loading &&
-                filteredEntries.map(entry => (
-                  <div key={entry.id} className="fade-card">
-                    <PollCard entry={entry} onArchive={handleArchive} />
-                  </div>
-                ))}
-              {!loading && !filteredEntries.length && (
-                <div className="rounded-2xl border border-white/10 bg-black/40 px-6 py-12 text-center text-white/70">
-                  No polls yet.
+                <span className="text-sm text-gray-400">{liveEntries.length} running</span>
+              </div>
+              <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
+                {renderPollGrid(liveEntries, "No live polls yet—launch your own or check back soon.")}
+              </div>
+            </section>
+
+            <section className="space-y-4">
+              <div className="flex flex-col gap-1 text-white sm:flex-row sm:items-end sm:justify-between">
+                <div>
+                  <p className="text-xs uppercase tracking-[0.45em] text-[#ffd208]/90">History</p>
+                  <h2 className="text-2xl font-semibold">Expired polls</h2>
                 </div>
-              )}
-            </div>
+                <span className="text-sm text-gray-400">{expiredEntries.length} archived</span>
+              </div>
+              <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
+                {renderPollGrid(expiredEntries, "No archived polls yet. Past votes will settle here automatically.")}
+              </div>
+            </section>
           </div>
         </div>
       </div>

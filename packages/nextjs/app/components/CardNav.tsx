@@ -2,9 +2,9 @@
 
 /* eslint-disable @next/next/no-img-element */
 import React, { useCallback, useLayoutEffect, useRef, useState } from "react";
-import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { gsap } from "gsap";
 import { GoArrowUpRight } from "react-icons/go";
+import { RainbowKitCustomConnectButton } from "~~/components/helper";
 
 export type CardNavLink = {
   label: string;
@@ -122,7 +122,7 @@ export const CardNav: React.FC<CardNavProps> = ({
     >
       <nav
         ref={navRef}
-        className={`card-nav ${isExpanded ? "open" : ""} block h-[60px] p-0 rounded-xl shadow-md relative overflow-hidden`}
+        className={`card-nav ${isExpanded ? "open" : ""} block h-[60px] p-0 rounded-xl shadow-md relative overflow-visible`}
         style={{ backgroundColor: baseColor }}
       >
         <div className="card-nav-top absolute inset-x-0 top-0 h-[60px] px-4 sm:px-6 z-[2] flex items-center justify-between relative">
@@ -146,8 +146,8 @@ export const CardNav: React.FC<CardNavProps> = ({
           <div className="logo-container absolute left-1/2 -translate-x-1/2">
             <img src="/shadow-logo.png" alt="Shadow logo" className="h-9 w-9 rounded" />
           </div>
-          <div className="flex justify-end items-center ml-auto min-w-[150px]">
-            <ConnectButton chainStatus="icon" showBalance={false} />
+          <div className="flex items-center justify-end gap-3 ml-auto min-w-[140px] max-w-[220px]">
+            <RainbowKitCustomConnectButton compact />
           </div>
         </div>
         <div

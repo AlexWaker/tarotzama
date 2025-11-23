@@ -2,34 +2,42 @@
 
 // @refresh reset
 import { Balance } from "../Balance";
-import { AddressInfoDropdown } from "./AddressInfoDropdown";
 import { WrongNetworkDropdown } from "./WrongNetworkDropdown";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
+import { Wallet2 } from "lucide-react";
 import { Address } from "viem";
 import { useTargetNetwork } from "~~/hooks/helper/useTargetNetwork";
-import { getBlockExplorerAddressLink } from "~~/utils/helper";
 
 /**
  * Custom Wagmi Connect Button (watch balance + custom design)
  */
-export const RainbowKitCustomConnectButton = () => {
+export const RainbowKitCustomConnectButton = ({ compact = false }: { compact?: boolean } = {}) => {
   const { targetNetwork } = useTargetNetwork();
 
   return (
     <ConnectButton.Custom>
-      {({ account, chain, openConnectModal, mounted }) => {
+      {({ account, chain, openConnectModal, openAccountModal, mounted }) => {
         const connected = mounted && account && chain;
-        const blockExplorerAddressLink = account
-          ? getBlockExplorerAddressLink(targetNetwork, account.address)
-          : undefined;
 
         return (
           <>
             {(() => {
               if (!connected) {
+                if (compact) {
+                  return (
+                    <button
+                      className="inline-flex h-12 w-12 items-center justify-center text-white"
+                      onClick={openConnectModal}
+                      type="button"
+                      aria-label="Connect wallet"
+                    >
+                      <Wallet2 className="h-6 w-6" />
+                    </button>
+                  );
+                }
                 return (
                   <button
-                    className="btn btn-md rounded-none bg-[#FFD208] text-gray-900 cursor-pointer border-none"
+                    className="btn btn-md rounded-full border border-white/20 bg-transparent px-5 py-2 text-white font-semibold cursor-pointer"
                     onClick={openConnectModal}
                     type="button"
                   >
@@ -43,18 +51,25 @@ export const RainbowKitCustomConnectButton = () => {
               }
 
               return (
-                <>
-                  <div className="flex flex-col items-center mr-1 text-gray-900">
-                    <Balance address={account.address as Address} className="min-h-0 h-auto" />
-                    <span className="text-xs text-gray-900">{chain.name}</span>
-                  </div>
-                  <AddressInfoDropdown
-                    address={account.address as Address}
-                    displayName={account.displayName}
-                    ensAvatar={account.ensAvatar}
-                    blockExplorerAddressLink={blockExplorerAddressLink}
-                  />
-                </>
+                <button
+                  type="button"
+                  onClick={openAccountModal}
+                  className={
+                    compact
+                      ? "inline-flex h-12 w-12 items-center justify-center text-white"
+                      : "inline-flex items-center gap-3 rounded-full border border-white/20 bg-transparent text-white px-4 py-2"
+                  }
+                  aria-label="View wallet options"
+                >
+                  {compact ? (
+                    <Wallet2 className="h-6 w-6" />
+                  ) : (
+                    <>
+                      <Balance address={account.address as Address} className="min-h-0 h-auto text-sm" />
+                      <span>{account.displayName}</span>
+                    </>
+                  )}
+                </button>
               );
             })()}
           </>

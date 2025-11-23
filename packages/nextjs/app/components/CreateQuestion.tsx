@@ -204,7 +204,7 @@ export const CreateQuestion = () => {
         await navigator.clipboard.writeText(link);
         setCopiedId(id);
         setTimeout(() => setCopiedId(null), 2000);
-        notification.success("Vote link copied to your clipboard.");
+        notification.success("Copied To Clipboard!");
       }
     } catch (err) {
       console.error("Failed to copy link", err);
@@ -237,15 +237,17 @@ export const CreateQuestion = () => {
         />
         <div className="relative space-y-8">
           <header className="space-y-4 text-center">
-            <p className="text-xs uppercase tracking-[0.65em] text-[#ffd208]/80">Zama · Confidential ballots</p>
-            <h2 className="text-4xl font-semibold tracking-tight text-white md:text-5xl">
+            <p className="whitespace-nowrap text-xs uppercase tracking-[0.55em] text-[#ffd208]/80">
+              Zama · Confidential ballots
+            </p>
+            <h2 className="text-[30px] leading-[1.2] font-semibold tracking-tight text-white sm:text-4xl md:text-5xl">
               Launch{" "}
               <span className="bg-gradient-to-r from-[#ffd208] via-[#ffb347] to-white bg-clip-text text-transparent">
                 encrypted votes
               </span>{" "}
               in seconds
             </h2>
-            <p className="mx-auto max-w-3xl text-base text-gray-300 md:text-lg">
+            <p className="mx-auto max-w-3xl text-sm text-gray-300 leading-relaxed sm:text-base md:text-lg">
               Define your prompt, curate two answers, and let the relayer + ACL automation keep tallies private until
               the deadline.
             </p>
@@ -382,8 +384,8 @@ export const CreateQuestion = () => {
           </form>
 
           {visibleQuestions.length > 0 && (
-            <section className="space-y-5 rounded-[40px] border border-white/10 bg-black/40 p-6 sm:p-8">
-              <div className="flex flex-wrap items-end justify-between gap-3">
+            <section className="space-y-5 rounded-[40px] border border-white/10 bg-black/40 p-5 sm:p-8">
+              <div className="flex flex-wrap items-end justify-between gap-3 text-center sm:text-left">
                 <div>
                   <p className="text-xs uppercase tracking-[0.5em] text-gray-500">Your live votes</p>
                   <h3 className="text-2xl font-semibold text-white">Sorted by freshest deployments</h3>
@@ -405,16 +407,16 @@ export const CreateQuestion = () => {
                   return (
                     <article
                       key={entry.id}
-                      className="group relative overflow-hidden rounded-[32px] border border-white/10 bg-black/60 shadow-[0_20px_60px_rgba(0,0,0,0.55)]"
+                      className="group relative overflow-hidden rounded-[32px] border border-white/10 bg-black/70 shadow-[0_20px_60px_rgba(0,0,0,0.55)]"
                     >
                       <img
                         src={cover}
                         alt=""
                         loading="lazy"
-                        className="absolute inset-0 h-full w-full rounded-[32px] object-cover opacity-35 transition duration-500 group-hover:scale-105"
+                        className="absolute inset-0 hidden h-full w-full rounded-[32px] object-cover opacity-35 transition duration-500 group-hover:scale-105 sm:block"
                       />
-                      <div className="relative z-10 flex h-full flex-col gap-4 rounded-[32px] bg-black/70 p-5 backdrop-blur-sm">
-                        <div className="space-y-1">
+                      <div className="relative z-10 flex h-full flex-col gap-4 rounded-[32px] bg-black/80 p-5 backdrop-blur-sm sm:bg-black/70">
+                        <div className="space-y-1 text-left">
                           <p className="text-xs uppercase tracking-[0.45em] text-[#ffd208]/80">Question #{entry.id}</p>
                           <h4 className="text-lg font-semibold text-white">{entry.question}</h4>
                           <p className="text-sm text-gray-200">{entry.possibleAnswers?.join(" vs ")}</p>
@@ -435,24 +437,24 @@ export const CreateQuestion = () => {
                           </span>
                         </div>
 
-                        <div className="flex flex-wrap gap-3">
+                        <div className="flex w-full flex-row flex-wrap gap-3">
                           <GlowButton
                             type="button"
                             onClick={() => copyLink(entry.id)}
                             fullWidth={false}
-                            className="px-4 py-2 text-sm"
+                            className="flex w-full items-center justify-center gap-2 px-4 py-2 text-sm sm:w-auto"
                           >
-                            <Copy className="mr-2 h-4 w-4" />
-                            {copiedId === entry.id ? "Link copied" : "Copy link"}
+                            <Copy className="h-4 w-4" />
+                            <span>{copiedId === entry.id ? "Link copied" : "Copy link"}</span>
                           </GlowButton>
                           <GlowButton
                             type="button"
                             fullWidth={false}
-                            className="px-4 py-2 text-sm"
+                            className="flex w-full items-center justify-center gap-2 px-4 py-2 text-sm sm:w-auto"
                             onClick={() => window.open(link, "_blank")}
                           >
-                            <Share2 className="mr-2 h-4 w-4" />
-                            Share preview
+                            <Share2 className="h-4 w-4" />
+                            <span>Share preview</span>
                           </GlowButton>
                         </div>
                       </div>

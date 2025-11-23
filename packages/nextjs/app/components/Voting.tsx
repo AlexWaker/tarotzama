@@ -167,15 +167,12 @@ export const Voting = ({ questionId, primary = true }: VotingProps) => {
     if (!url) return;
     navigator.clipboard
       ?.writeText(url)
-      .then(() => notification.success("Poll link copied"))
+      .then(() => notification.success("Copied To Clipboard!"))
       .catch(() => notification.error("Unable to copy link"));
   };
 
   const cardBody = (
-    <div
-      className={`${wrapperClass} relative overflow-hidden flex flex-col gap-4`}
-      style={{ backdropFilter: "blur(16px)" }}
-    >
+    <div className={`${wrapperClass} relative flex flex-col gap-5`} style={{ backdropFilter: "blur(16px)" }}>
       <div
         className="absolute inset-0 pointer-events-none opacity-30"
         style={{
@@ -184,8 +181,15 @@ export const Voting = ({ questionId, primary = true }: VotingProps) => {
         }}
       />
 
-      <div className="relative flex flex-col gap-6">
-        <div className="relative flex items-start gap-4 pr-[9.5rem]">
+      <div className="relative flex flex-col gap-5 pt-8 md:gap-6 md:pt-0">
+        <div className="absolute right-2 top-2 flex justify-end">
+          {!isPrivatePoll ? (
+            <ShareButtons onShareX={handleShare("x")} onShareFarcaster={handleShare("farcaster")} />
+          ) : (
+            <ShareButtons onCopy={handleCopyLink} />
+          )}
+        </div>
+        <div className="relative flex flex-col gap-4 md:flex-row md:items-start md:pr-[9.5rem]">
           <div className="h-14 w-14 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center overflow-hidden">
             <img
               src={featureImage}
@@ -198,54 +202,51 @@ export const Voting = ({ questionId, primary = true }: VotingProps) => {
             />
           </div>
           <div className="flex-1 min-w-0 space-y-2.5">
-            <div className="flex flex-wrap items-center gap-2.5 text-xs text-gray-300">
-              <span className="px-3 py-1 rounded-full bg-white/5 border border-white/10 uppercase tracking-[0.3em] flex items-center gap-1">
-                {isPrivatePoll ? (
-                  <>
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <path d="M3 11h18" />
-                      <path d="M5 11V7a7 7 0 0 1 14 0v4" />
-                      <rect width="18" height="11" x="3" y="11" rx="2" />
-                    </svg>
-                    Private
-                  </>
-                ) : (
-                  <>
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <circle cx="12" cy="12" r="10" />
-                      <line x1="2" y1="12" x2="22" y2="12" />
-                      <path d="M12 2a15.3 15.3 0 0 1 0 20" />
-                      <path d="M12 2a15.3 15.3 0 0 0 0 20" />
-                    </svg>
-                    Public
-                  </>
-                )}
-              </span>
-              <span className="px-3 py-1 rounded-full bg-white/5 border border-white/10 uppercase tracking-[0.3em] text-gray-200">
-                #{questionId}
-              </span>
-              <span className="px-3 py-1 rounded-full bg-[#ffd208]/10 text-[#ffd208] border border-[#ffd208]/40">
-                Confidential
-              </span>
-              <span className="inline-flex items-center gap-2 rounded-full border border-emerald-400/30 bg-emerald-500/10 px-3 py-1 text-[11px] font-medium text-emerald-200 shadow-[0_8px_24px_rgba(16,185,129,0.25)]">
-                <span className="h-2.5 w-2.5 rounded-full bg-emerald-400" /> Active
-              </span>
+            <div className="flex flex-wrap gap-2 text-xs text-gray-300">
+              <div className="flex flex-wrap gap-2">
+                <span className="flex items-center gap-1 rounded-full border border-white/10 bg-white/5 px-3 py-1 uppercase tracking-[0.3em]">
+                  {isPrivatePoll ? (
+                    <>
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M3 11h18" />
+                        <path d="M5 11V7a7 7 0 0 1 14 0v4" />
+                        <rect width="18" height="11" x="3" y="11" rx="2" />
+                      </svg>
+                      Private
+                    </>
+                  ) : (
+                    <>
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <circle cx="12" cy="12" r="10" />
+                        <line x1="2" y1="12" x2="22" y2="12" />
+                        <path d="M12 2a15.3 15.3 0 0 1 0 20" />
+                        <path d="M12 2a15.3 15.3 0 0 0 0 20" />
+                      </svg>
+                      Public
+                    </>
+                  )}
+                </span>
+                <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1 uppercase tracking-[0.3em] text-gray-200">
+                  #{questionId}
+                </span>
+              </div>
+              <div className="flex gap-2 w-full sm:w-auto">
+                <span className="rounded-full border border-[#ffd208]/40 bg-[#ffd208]/10 px-3 py-1 text-[#ffd208]">
+                  Confidential
+                </span>
+                <span className="inline-flex items-center gap-2 rounded-full border border-emerald-400/30 bg-emerald-500/10 px-3 py-1 text-[11px] font-medium text-emerald-200 shadow-[0_8px_24px_rgba(16,185,129,0.25)]">
+                  <span className="h-2.5 w-2.5 rounded-full bg-emerald-400" /> Active
+                </span>
+              </div>
             </div>
             <Text size="6" weight="bold" className="mt-1 leading-tight break-words max-w-[calc(100%-1rem)]">
               {displayQuestion}
             </Text>
             <p className="text-base text-gray-200">{questionData.possibleAnswers.join(" · ")}</p>
           </div>
-          <div className="absolute top-2 right-2 flex items-center gap-2">
-            {!isPrivatePoll ? (
-              <ShareButtons onShareX={handleShare("x")} onShareFarcaster={handleShare("farcaster")} />
-            ) : (
-              <ShareButtons onCopy={handleCopyLink} />
-            )}
-          </div>
         </div>
 
-        <div className="rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-4 grid grid-cols-1 gap-3 md:grid-cols-3">
+        <div className="grid grid-cols-1 gap-3 rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3 sm:grid-cols-3">
           <div className="flex flex-col gap-1">
             <p className="text-[10px] uppercase tracking-[0.4em] text-gray-400">Deadline</p>
             <p className="text-sm text-white/90">{new Date(questionData.deadline * 1000).toLocaleString()}</p>
@@ -296,7 +297,7 @@ export const Voting = ({ questionId, primary = true }: VotingProps) => {
           </Box>
         </div>
 
-        <div className="rounded-2xl bg-white/[0.04] border border-white/10 p-5 space-y-3">
+        <div className="space-y-3 rounded-2xl border border-white/10 bg-white/[0.04] p-4 sm:p-5">
           <p className="text-sm text-gray-300">
             {questionData.resultsFinalized
               ? "Tallies published on-chain."

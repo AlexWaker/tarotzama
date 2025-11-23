@@ -7,6 +7,7 @@ import Navbar from "../components/Navbar";
 import ShareButtons from "../components/ShareButtons";
 import { useVoting } from "../hooks/useVoting";
 import { Text, Theme } from "@radix-ui/themes";
+import { notification } from "~~/utils/helper/notification";
 
 const SectionCard = ({
   title,
@@ -127,8 +128,9 @@ const ResultsContent = () => {
   const handleCopy = async () => {
     try {
       await navigator.clipboard.writeText(`${shareText} ${shareUrl}`);
+      notification.success("Copied To Clipboard!");
     } catch {
-      // ignore
+      notification.error("Unable to copy link");
     }
   };
 

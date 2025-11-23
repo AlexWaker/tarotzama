@@ -131,7 +131,7 @@ export const VoteStats = ({
           <StatRow key={`${handle}-${idx}`} label={`Option ${idx + 1}`} value={truncate(handle, 8)} />
         ))}
         <Text size="1" color="gray">
-          Handles + proofs stay opaque; only after reveal do tallies decrypt and post on-chain.
+          Handles + Proofs stay opaque; only after reveal do tallies decrypt and post on-chain.
         </Text>
       </div>
 

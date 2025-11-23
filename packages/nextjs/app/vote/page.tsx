@@ -6,10 +6,60 @@ import { GlobalPolyfill } from "../components/GlobalPolyfill";
 import Navbar from "../components/Navbar";
 import Voting from "../components/Voting";
 import { Card, Text, Theme } from "@radix-ui/themes";
+import { ArrowDown, ShieldCheck, Stamp, Wallet2 } from "lucide-react";
 
 const VotePage = () => {
   const [questionId, setQuestionId] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
+  const [showGuide, setShowGuide] = useState(false);
+  const [guideMounted, setGuideMounted] = useState(false);
+
+  const guideSteps = [
+    {
+      title: "Connect & fund",
+      description: (
+        <>
+          Connect your wallet and make sure it holds a little Sepolia ETH.{" "}
+          <a
+            href="https://faucet.quicknode.com/ethereum/sepolia"
+            target="_blank"
+            rel="noreferrer"
+            className="text-[#ffd208] underline underline-offset-2"
+          >
+            Grab some from the faucet
+          </a>{" "}
+          if you need a top-up.
+        </>
+      ),
+      icon: <Wallet2 className="h-6 w-6" />,
+    },
+    {
+      title: "Choose your poll",
+      description:
+        "Pick a public vote below or paste the private link you received. Every choice encrypts locally before it ever touches the network.",
+      icon: <ShieldCheck className="h-6 w-6" />,
+    },
+    {
+      title: "Submit & wait",
+      description:
+        "Confirm the transaction, watch for the success toast, and let the tally remain hidden until the creator opens results.",
+      icon: <Stamp className="h-6 w-6" />,
+    },
+  ];
+
+  const openGuide = () => {
+    if (guideMounted) {
+      setShowGuide(true);
+      return;
+    }
+    setGuideMounted(true);
+    requestAnimationFrame(() => setShowGuide(true));
+  };
+
+  const closeGuide = () => {
+    setShowGuide(false);
+    setTimeout(() => setGuideMounted(false), 320);
+  };
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -101,6 +151,13 @@ const VotePage = () => {
                     </svg>
                     Discover Polls
                   </Link>
+                  <button
+                    type="button"
+                    onClick={openGuide}
+                    className="text-sm font-semibold text-[#ffd208] underline underline-offset-4 transition hover:text-white"
+                  >
+                    How to vote?
+                  </button>
                 </div>
               </div>
             </div>
@@ -108,6 +165,51 @@ const VotePage = () => {
           <section className="w-full max-w-7xl mt-10 mb-16">{renderState()}</section>
         </div>
       </div>
+      {guideMounted && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
+          <div
+            className={`absolute inset-0 bg-black/70 backdrop-blur-sm transition-opacity duration-300 ${showGuide ? "opacity-100" : "opacity-0"}`}
+            onClick={closeGuide}
+          />
+          <div
+            className={`relative z-10 w-full max-w-3xl rounded-[36px] border border-white/10 bg-[#050505]/95 p-6 sm:p-10 text-white shadow-[0_40px_120px_rgba(0,0,0,0.65)] transition-all duration-300 ${showGuide ? "opacity-100 translate-y-0 scale-100" : "opacity-0 translate-y-6 scale-95"}`}
+          >
+            <button
+              type="button"
+              className="absolute right-4 top-4 h-10 w-10 rounded-full border border-white/20 text-gray-400 transition hover:text-white"
+              onClick={closeGuide}
+              aria-label="Close voting guide"
+            >
+              ✕
+            </button>
+            <p className="text-xs uppercase tracking-[0.4em] text-[#ffd208]/80">Shadow walkthrough</p>
+            <h3 className="mt-2 text-2xl font-semibold">How to cast a confidential vote</h3>
+            <div className="mt-6 space-y-6">
+              {guideSteps.map((step, index) => (
+                <div key={step.title} className="space-y-4">
+                  <div className="flex items-start gap-4 rounded-3xl border border-white/10 bg-white/5 p-4">
+                    <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-white/10 text-[#ffd208]">
+                      {step.icon}
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-xs font-semibold uppercase tracking-[0.35em] text-gray-400">
+                        Step {index + 1}
+                      </p>
+                      <h4 className="text-lg font-semibold text-white">{step.title}</h4>
+                      <p className="text-sm text-gray-200">{step.description}</p>
+                    </div>
+                  </div>
+                  {index < guideSteps.length - 1 && (
+                    <div className="flex items-center justify-center text-[#ffd208]/80">
+                      <ArrowDown className="h-6 w-6" />
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
     </Theme>
   );
 };
