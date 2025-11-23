@@ -65,7 +65,7 @@ export const useFHECounterWagmi = (parameters: {
 
   // Read count handle via wagmi
   const readResult = useReadContract({
-    address: (hasContract ? (fheCounter!.address as unknown as `0x${string}`) : undefined) as `0x${string}` | undefined,
+    address: (hasContract ? (fheCounter!.address as unknown) : undefined) as `0x${string}`,
     abi: (hasContract ? ((fheCounter as FHECounterInfo).abi as any) : undefined) as any,
     functionName: "getCount" as const,
     query: {
