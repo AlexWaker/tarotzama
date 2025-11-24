@@ -266,7 +266,7 @@ export const CreateQuestion = () => {
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="grid gap-6">
-              <label className="space-y-2">
+              <label className="space-y-2 w-full">
                 <span className="text-xs font-semibold uppercase tracking-[0.35em] text-gray-400">Question prompt</span>
                 <Input
                   placeholder="Will privacy-preserving tech become the norm by 2026?"
@@ -329,7 +329,7 @@ export const CreateQuestion = () => {
                   { label: "Answer A", value: answer1, setter: setAnswer1 },
                   { label: "Answer B", value: answer2, setter: setAnswer2 },
                 ].map(({ label, value, setter }) => (
-                  <label key={label} className="space-y-2">
+                  <label key={label} className="space-y-2 w-full">
                     <span className="text-xs font-semibold uppercase tracking-[0.35em] text-gray-400">{label}</span>
                     <Input
                       value={value}
@@ -341,7 +341,7 @@ export const CreateQuestion = () => {
                 ))}
               </div>
 
-              <label className="space-y-2">
+              <label className="space-y-2 w-full">
                 <span className="text-xs font-semibold uppercase tracking-[0.35em] text-gray-400">
                   Image URL (optional)
                 </span>
@@ -353,7 +353,7 @@ export const CreateQuestion = () => {
                 />
               </label>
 
-              <label className="space-y-2">
+              <label className="space-y-2 w-full">
                 <span className="text-xs font-semibold uppercase tracking-[0.35em] text-gray-400">Voting deadline</span>
                 <div className="space-y-2">
                   <Input
@@ -361,6 +361,7 @@ export const CreateQuestion = () => {
                     min={soonestDeadlineInput}
                     value={deadlineInput}
                     onChange={event => setDeadlineInput(event.target.value)}
+                    className="w-full"
                     required
                   />
                   <p className="flex items-center gap-2 text-xs text-gray-400">

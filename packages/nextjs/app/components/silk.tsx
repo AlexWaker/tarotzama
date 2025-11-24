@@ -99,8 +99,11 @@ export const Silk = ({ speed = 5, scale = 1, color = "#f1f1f1", noiseIntensity =
 
     const resize = () => {
       if (!containerRef.current) return;
-      const { clientWidth, clientHeight } = containerRef.current;
-      renderer.setSize(clientWidth, clientHeight);
+      const width = window.innerWidth;
+      const height = Math.max(window.innerHeight, document.documentElement.scrollHeight);
+      containerRef.current.style.width = `${width}px`;
+      containerRef.current.style.height = `${height}px`;
+      renderer.setSize(width, height);
     };
 
     const renderLoop = () => {
@@ -114,6 +117,7 @@ export const Silk = ({ speed = 5, scale = 1, color = "#f1f1f1", noiseIntensity =
 
     resize();
     window.addEventListener("resize", resize);
+    window.addEventListener("scroll", resize, { passive: true });
     const resizeObserver =
       typeof ResizeObserver !== "undefined"
         ? new ResizeObserver(() => {
@@ -125,6 +129,7 @@ export const Silk = ({ speed = 5, scale = 1, color = "#f1f1f1", noiseIntensity =
 
     return () => {
       window.removeEventListener("resize", resize);
+      window.removeEventListener("scroll", resize);
       resizeObserver?.disconnect();
       cancelAnimationFrame(animationFrame);
       geometry.dispose();
