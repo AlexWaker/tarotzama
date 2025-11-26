@@ -109,6 +109,8 @@ If you deploy to a different network, also update `packages/nextjs/contracts/dep
 
 ## Using Shadow
 
+![Create Page](packages/nextjs/public/Create-page.jpg)
+
 ### Creating a vote
 
 - Click **Create a vote** in the hero card or scroll to the builder.
@@ -119,6 +121,8 @@ If you deploy to a different network, also update `packages/nextjs/contracts/dep
 
 ### Voting & sharing
 
+![Discover Page](packages/nextjs/public/Discover-Page.jpg)
+
 - Visit `/discover` to browse curated polls. Each card exposes:
   - Creator avatar (logo placeholder if missing)
   - Status pills (Public/Private, question number, Confidential flag)
@@ -127,6 +131,8 @@ If you deploy to a different network, also update `packages/nextjs/contracts/dep
 - Clicking **View & Vote** opens `/vote?questionId=…` with the larger poll card, diagnostics sidebar, and action buttons.
 
 ### Results & diagnostics
+
+![Vote Page](packages/nextjs/public/Vote-Page.jpg)
 
 - When a poll is closed, creators reveal encrypted tallies via relayer actions exposed in the diagnostics panel.
 - The bottom card narrates the privacy guarantees: encrypted ballots, proofs upon reveal, and a “Secure link · Encrypted voters” badge for auditors.
