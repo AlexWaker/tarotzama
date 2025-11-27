@@ -239,10 +239,10 @@ export const CreateQuestion = () => {
     const now = Date.now() / 1000;
     const closed = entry.deadline ? entry.deadline < now : false;
     if (entry.resultsOpened) {
-      return { label: "Results opened", className: "bg-emerald-400/20 text-emerald-200 border border-emerald-400/30" };
+      return { label: "Results Opened", className: "bg-emerald-400/20 text-emerald-200 border border-emerald-400/30" };
     }
     if (closed) {
-      return { label: "Awaiting results", className: "bg-blue-400/20 text-blue-100 border border-blue-400/40" };
+      return { label: "Awaiting Results", className: "bg-blue-400/20 text-blue-100 border border-blue-400/40" };
     }
     return { label: "Live", className: "bg-[#ffd208]/20 text-[#ffd208] border border-[#ffd208]/40" };
   };
@@ -252,8 +252,7 @@ export const CreateQuestion = () => {
   };
 
   return (
-    <>
-      <section className="w-full px-4 pt-12 pb-4" id="create">
+    <section className="w-full px-4 pt-12 pb-4" id="create">
       <div className="relative mx-auto w-full max-w-6xl space-y-10 overflow-hidden rounded-[44px] border border-white/10 bg-[#050505]/95 p-6 sm:p-10 shadow-[0_40px_120px_rgba(0,0,0,0.65)]">
         <div
           className="pointer-events-none absolute inset-0 opacity-40"
@@ -264,7 +263,7 @@ export const CreateQuestion = () => {
         <div className="relative space-y-8">
           <header className="space-y-4 text-center">
             <p className="text-xs uppercase tracking-[0.4em] text-[#ffd208]/80 sm:tracking-[0.55em]">
-              Zama · Confidential ballots
+              Zama · Confidential Ballots
             </p>
             <h2 className="text-[30px] leading-[1.2] font-semibold tracking-tight text-white sm:text-4xl md:text-5xl">
               Launch{" "}
@@ -370,7 +369,7 @@ export const CreateQuestion = () => {
               <div className="flex flex-col gap-4 sm:flex-row">
                 <label className="space-y-2 w-full sm:w-1/2">
                   <span className="text-xs font-semibold uppercase tracking-[0.35em] text-gray-400">
-                    Voting deadline
+                    Voting Deadline
                   </span>
                   <div className="space-y-2">
                     <div className="relative flex items-center" ref={dateWrapperRef}>
@@ -441,7 +440,7 @@ export const CreateQuestion = () => {
                   const cover = entry.image || pickFallbackImage(index);
                   const deadlineLabel = entry.deadline
                     ? new Date(entry.deadline * 1000).toLocaleString()
-                    : "No deadline";
+                    : "No Deadline";
 
                   return (
                     <article
@@ -485,9 +484,9 @@ export const CreateQuestion = () => {
                           >
                             <Copy className="h-4 w-4" />
                             <span className="hidden sm:inline">
-                              {copiedId === entry.id ? "Link copied" : "Copy link"}
+                              {copiedId === entry.id ? "Link Copied" : "Copy Link"}
                             </span>
-                            <span className="sm:hidden">{copiedId === entry.id ? "Copied" : "Copy"}</span>
+                            <span className="sm:hidden">{copiedId === entry.id ? "Copied!" : "Copy"}</span>
                           </GlowButton>
                           <GlowButton
                             type="button"
@@ -516,22 +515,6 @@ export const CreateQuestion = () => {
         </div>
       </div>
     </section>
-      <style jsx global>{`
-        input.hide-picker::-webkit-calendar-picker-indicator {
-          display: none !important;
-          opacity: 0 !important;
-        }
-        input.hide-picker::-webkit-inner-spin-button,
-        input.hide-picker::-webkit-clear-button {
-          display: none !important;
-          opacity: 0 !important;
-        }
-        input.hide-picker {
-          -webkit-appearance: none;
-          appearance: none;
-        }
-      `}</style>
-    </>
   );
 };
 
