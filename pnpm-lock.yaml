@@ -13,7 +13,9 @@ onlyBuiltDependencies:
   - sharp
   - unrs-resolver
   - utf-8-validate
-  - yarn
+
+overrides:
+  micro-eth-signer: 0.15.0
 
 importers:
 
@@ -2810,12 +2812,6 @@ packages:
   /@noble/hashes@1.8.0:
     resolution: {integrity: sha512-jCs9ldd7NwzpgXDIf6P3+NrHh9/sD6CQdxHyjQI+h/6rDNo88ypBxxz45UDuZHz9r3tNz7N/VInSVoVdtXEI4A==}
     engines: {node: ^14.21.3 || >=16}
-
-  /@noble/hashes@2.0.0-beta.1:
-    resolution: {integrity: sha512-xnnogJ6ccNZ55lLgWdjhBqKUdFoznjpFr3oy23n5Qm7h+ZMtt8v4zWvHg9zRW6jcETweplD5F4iUqb0SSPC+Dw==}
-    engines: {node: '>= 20.19.0'}
-    deprecated: beta
-    dev: true
 
   /@noble/hashes@2.0.1:
     resolution: {integrity: sha512-XlOlEbQcE9fmuXxrVTXCTlG2nlRXa9Rj3rr5Ue/+tX+nmkgbX720YHh0VR3hBF9xDvwnb8D2shVGOwNx+ulArw==}
@@ -11082,7 +11078,7 @@ packages:
       json-stream-stringify: 3.1.6
       keccak: 3.0.4
       lodash: 4.17.21
-      micro-eth-signer: 0.16.0
+      micro-eth-signer: 0.15.0
       mnemonist: 0.38.5
       mocha: 10.8.2
       p-map: 4.0.0
@@ -12396,12 +12392,11 @@ packages:
     resolution: {integrity: sha512-IebiK79sqIy+E4EgOr+CAw+Ke8hAspXKzBd0JdgEmPHiAwmvEj2S4h1rfvo+o/BnfEYd/jAOg5IeeIjzlzSnDg==}
     dev: true
 
-  /micro-eth-signer@0.16.0:
-    resolution: {integrity: sha512-rsSJcMGfY+kt3ROlL3U6y5BcjkK2H0zDKUQV6soo1JvjrctKKe+X7rKB0YIuwhWjlhJIoVHLuRYF+GXyyuVXxQ==}
-    engines: {node: '>= 20.19.0'}
+  /micro-eth-signer@0.15.0:
+    resolution: {integrity: sha512-VkKK698Odm0ef40ERC9FdcG6BHBL9vWhy+7xkLL1M0O3bcRBLi7FP7mr+4SdiPaP823Q+r6c8JdUtWdESSf06A==}
     dependencies:
       '@noble/curves': 1.9.7
-      '@noble/hashes': 2.0.0-beta.1
+      '@noble/hashes': 1.8.0
       micro-packed: 0.7.3
     dev: true
 
@@ -13159,8 +13154,8 @@ packages:
         optional: true
     dependencies:
       '@adraffy/ens-normalize': 1.11.1
-      '@noble/curves': 1.8.1
-      '@noble/hashes': 1.7.1
+      '@noble/curves': 1.9.7
+      '@noble/hashes': 1.8.0
       '@scure/bip32': 1.6.2
       '@scure/bip39': 1.5.4
       abitype: 1.0.6(typescript@5.8.3)
@@ -16215,7 +16210,6 @@ packages:
     resolution: {integrity: sha512-prL3kGtyG7o9Z9Sv8IPfBNrWTDmXB4Qbes8A9rEzt6wkJV8mUvoirjU0Mp3GGAU06Y0XQyA3/2/RQFVuK7MTfg==}
     engines: {node: '>=4.0.0'}
     hasBin: true
-    requiresBuild: true
     dev: true
 
   /yauzl-clone@1.0.4:

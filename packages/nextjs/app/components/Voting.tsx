@@ -106,7 +106,16 @@ export const Voting = ({ questionId, primary = true }: VotingProps) => {
   const deadlinePassed = questionData ? Date.now() / 1000 >= questionData.deadline : false;
   const decryptedTallies = questionData?.decryptedTally ?? [0, 0];
   const totalVotes = decryptedTallies[0] + decryptedTallies[1];
-  const noVotesSubmitted = totalVotes === 0;
+  const hasEncryptedHandles =
+    Array.isArray(questionData.encryptedTally) &&
+    questionData.encryptedTally.some(
+      handle =>
+        typeof handle === "string" &&
+        handle.length > 4 &&
+        handle !== "0x" &&
+        !/^0x0+$/i.test(handle ?? ""),
+    );
+  const noVotesSubmitted = totalVotes === 0 && !hasEncryptedHandles;
   const showTallies = Boolean(questionData?.resultsOpened || questionData?.resultsFinalized);
   const canPublishResults = Boolean(questionData?.resultsOpened && !questionData?.resultsFinalized);
   const isPrivatePoll = questionData.question.startsWith("🔒");
@@ -332,11 +341,13 @@ export const Voting = ({ questionId, primary = true }: VotingProps) => {
           <p className="text-sm text-gray-300">
             {questionData.resultsFinalized
               ? "Tallies published on-chain."
-              : noVotesSubmitted && deadlinePassed
-                ? "Voting window closed with no submissions. Nothing can be decrypted."
-                : questionData.resultsOpened
-                  ? "Tallies decrypted — publish to reveal clear counts."
-                  : `Votes remain encrypted until ${new Date(questionData.deadline * 1000).toLocaleString()}.`}
+              : questionData.resultsOpened
+                ? "Tallies decrypted — publish to reveal clear counts."
+                : deadlinePassed && hasEncryptedHandles
+                  ? "Deadline passed; encrypted votes are ready to decrypt."
+                  : deadlinePassed && noVotesSubmitted
+                    ? "Voting window closed with no submissions. Nothing can be decrypted."
+                    : `Votes remain encrypted until ${new Date(questionData.deadline * 1000).toLocaleString()}.`}
           </p>
           <div className="grid gap-2.5 sm:grid-cols-2">
             {questionData.possibleAnswers.map((ans, idx) => {
@@ -416,9 +427,14 @@ export const Voting = ({ questionId, primary = true }: VotingProps) => {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <ActionButton
-              disabled={!deadlinePassed || questionData.resultsOpened || revealLoading || noVotesSubmitted}
+              disabled={
+                !deadlinePassed ||
+                questionData.resultsOpened ||
+                revealLoading ||
+                (totalVotes === 0 && !hasEncryptedHandles)
+              }
               onClick={async () => {
-                if (!deadlinePassed || questionData.resultsOpened || noVotesSubmitted) return;
+                if (!deadlinePassed || questionData.resultsOpened || (totalVotes === 0 && !hasEncryptedHandles)) return;
                 let toastId: string | undefined;
                 try {
                   toastId = notification.loading("Requesting Tally Reveal…") ?? undefined;
@@ -437,13 +453,19 @@ export const Voting = ({ questionId, primary = true }: VotingProps) => {
                 }
               }}
             >
-              {noVotesSubmitted ? "No Votes To Reveal" : revealLoading ? "Publishing…" : "Reveal Encrypted Tally"}
+              {!deadlinePassed
+                ? "Deadline Not Reached"
+                : revealLoading
+                  ? "Requesting…"
+                  : totalVotes === 0 && !hasEncryptedHandles
+                    ? "No votes to decrypt"
+                    : "Reveal Encrypted Tally"}
             </ActionButton>
             <ActionButton
               variant="primary"
-              disabled={!canPublishResults || publishLoading || noVotesSubmitted}
+              disabled={!canPublishResults || publishLoading || (totalVotes === 0 && !hasEncryptedHandles)}
               onClick={async () => {
-                if (!canPublishResults || noVotesSubmitted) return;
+                if (!canPublishResults || (totalVotes === 0 && !hasEncryptedHandles)) return;
                 let toastId: string | undefined;
                 try {
                   toastId = notification.loading("Publishing Clear Tally…") ?? undefined;

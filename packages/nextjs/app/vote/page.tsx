@@ -64,26 +64,18 @@ const VotePage = () => {
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    const randomId = params.get("questionId");
-    
-    if (randomId && questionIdMapper.hasRandomId(randomId)) {
-      const numericId = questionIdMapper.getNumericId(randomId);
-      if (numericId !== null && numericId >= 0) {
-        setQuestionId(numericId);
-      } else {
-        setQuestionId(null);
-      }
-    } else if (!randomId) {
-      // Fallback: support direct numeric IDs for backward compatibility
-      const id = Number(params.get("id"));
-      if (!Number.isNaN(id) && id >= 0) {
-        setQuestionId(id);
-      } else {
-        setQuestionId(null);
-      }
-    } else {
-      setQuestionId(null);
+    const idParam = params.get("questionId") ?? params.get("id");
+    let resolvedId: number | null = null;
+
+    if (idParam && questionIdMapper.hasRandomId(idParam)) {
+      const numeric = questionIdMapper.getNumericId(idParam);
+      resolvedId = numeric !== null && numeric >= 0 ? numeric : null;
+    } else if (idParam) {
+      const numeric = Number(idParam);
+      resolvedId = !Number.isNaN(numeric) && numeric >= 0 ? numeric : null;
     }
+
+    setQuestionId(resolvedId);
     setLoading(false);
   }, []);
 

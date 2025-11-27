@@ -58,6 +58,7 @@ export const CreateQuestion = () => {
   const [visibleCount, setVisibleCount] = useState(CARD_BATCH_SIZE);
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
   const dateInputRef = useRef<HTMLInputElement | null>(null);
+  const dateWrapperRef = useRef<HTMLDivElement | null>(null);
 
   const resolvedCount = useMemo(() => questionsCount ?? 0, [questionsCount]);
 
@@ -110,6 +111,23 @@ export const CreateQuestion = () => {
     () => sortedUserQuestions.slice(0, visibleCount),
     [sortedUserQuestions, visibleCount],
   );
+
+  useEffect(() => {
+    const handleBlurPicker = (event: MouseEvent | TouchEvent) => {
+      const input = dateInputRef.current;
+      const wrapper = dateWrapperRef.current;
+      if (!input || !wrapper) return;
+      if (!wrapper.contains(event.target as Node)) {
+        input.blur();
+      }
+    };
+    document.addEventListener("mousedown", handleBlurPicker);
+    document.addEventListener("touchstart", handleBlurPicker);
+    return () => {
+      document.removeEventListener("mousedown", handleBlurPicker);
+      document.removeEventListener("touchstart", handleBlurPicker);
+    };
+  }, []);
 
   useEffect(() => {
     if (!sortedUserQuestions.length) {
@@ -234,7 +252,8 @@ export const CreateQuestion = () => {
   };
 
   return (
-    <section className="w-full px-4 pt-12 pb-4" id="create">
+    <>
+      <section className="w-full px-4 pt-12 pb-4" id="create">
       <div className="relative mx-auto w-full max-w-6xl space-y-10 overflow-hidden rounded-[44px] border border-white/10 bg-[#050505]/95 p-6 sm:p-10 shadow-[0_40px_120px_rgba(0,0,0,0.65)]">
         <div
           className="pointer-events-none absolute inset-0 opacity-40"
@@ -354,7 +373,7 @@ export const CreateQuestion = () => {
                     Voting deadline
                   </span>
                   <div className="space-y-2">
-                    <div className="relative">
+                    <div className="relative flex items-center" ref={dateWrapperRef}>
                       <input
                         ref={dateInputRef}
                         type="datetime-local"
@@ -362,10 +381,13 @@ export const CreateQuestion = () => {
                         value={deadlineInput}
                         onChange={event => handleDeadlineChange(event.target.value)}
                         placeholder="Pick a date"
-                        className="flex h-14 w-full items-center rounded-2xl border border-white/10 bg-black/50 px-4 text-base text-white transition hover:border-[#ffd208]/60 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd208]/40 appearance-none"
+                        onClick={() => dateInputRef.current?.showPicker?.()}
+                        onFocus={() => dateInputRef.current?.showPicker?.()}
+                        onTouchEnd={() => dateInputRef.current?.showPicker?.()}
+                        className="hide-picker flex h-14 w-full items-center rounded-2xl border border-white/10 bg-black/50 px-4 pr-5 text-base text-white transition hover:border-[#ffd208]/60 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd208]/40 appearance-none cursor-pointer"
                         required
                       />
-                      <Clock3 className="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[#ffd208]" />
+                      <Clock3 className="pointer-events-none absolute right-3 h-4 w-4 text-[#ffd208]" />
                     </div>
                     <p className="flex items-center gap-2 text-xs text-gray-400">
                       <Clock3 className="h-4 w-4 text-[#ffd208]" />
@@ -494,6 +516,22 @@ export const CreateQuestion = () => {
         </div>
       </div>
     </section>
+      <style jsx global>{`
+        input.hide-picker::-webkit-calendar-picker-indicator {
+          display: none !important;
+          opacity: 0 !important;
+        }
+        input.hide-picker::-webkit-inner-spin-button,
+        input.hide-picker::-webkit-clear-button {
+          display: none !important;
+          opacity: 0 !important;
+        }
+        input.hide-picker {
+          -webkit-appearance: none;
+          appearance: none;
+        }
+      `}</style>
+    </>
   );
 };
 
