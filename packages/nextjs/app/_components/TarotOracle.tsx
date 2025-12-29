@@ -210,17 +210,17 @@ export const TarotOracle = () => {
                   </header>
                   <h3 className="text-xl font-semibold text-white">{card.name}</h3>
                   <p className="text-sm text-slate-200/80">{card.description}</p>
-                  <div className="text-xs text-slate-300">{card.element}</div>
+                  <div className="text-xs text-slate-300">{card.suit}</div>
                   <div>
-                    <p className="text-xs text-slate-400 uppercase tracking-[0.3em]">启示</p>
+                    <p className="text-xs text-slate-400 uppercase tracking-[0.3em]">关键词</p>
                     <ul className="space-y-1 text-slate-100 text-sm list-disc list-inside">
-                      {(card.reversed ? (card.reversed as unknown as string[]) : (card.upright as unknown as string[])).map((keyword: string) => (
+                      {(card.keywords ?? []).map(keyword => (
                         <li key={keyword}>{keyword}</li>
                       ))}
                     </ul>
                   </div>
-                  <p className="text-xs text-slate-400 uppercase tracking-[0.3em]">咒语</p>
-                  <p className="text-sm text-slate-100">{card.affirmation}</p>
+                  <p className="text-xs text-slate-400 uppercase tracking-[0.3em]">提示</p>
+                  <p className="text-sm text-slate-100">{card.reversed ? "逆位提示：请留意能量的阻滞/反转。" : "正位提示：顺势而为，保持觉察。"}</p>
                 </article>
               ))}
             </div>
