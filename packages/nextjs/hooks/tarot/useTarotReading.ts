@@ -171,13 +171,9 @@ export const useTarotReading = ({ instance, initialMockChains }: UseTarotReading
       key: `card-${index}`,
       handle,
     }));
-    const orientationHandles = reading.encryptedIsReversed.map((handle, index) => ({
-      key: `orientation-${index}`,
-      handle,
-    }));
-    const merged = [...cardHandles, ...orientationHandles].filter(entry => entry.handle && entry.handle !== ethers.ZeroHash);
-    if (!merged.length) return undefined;
-    return merged;
+    const filtered = cardHandles.filter(entry => entry.handle && entry.handle !== ethers.ZeroHash);
+    if (!filtered.length) return undefined;
+    return filtered;
   }, [contractAddress, reading]);
 
   const {
@@ -215,18 +211,19 @@ export const useTarotReading = ({ instance, initialMockChains }: UseTarotReading
   }, [reading, results]);
 
   const clearOrientations = useMemo(() => {
+    // Frontend-side pseudo-random orientation (chain env may return biased results).
+    // Stable for the same readingId + cardId + index, but does not rely on on-chain encrypted orientation.
     if (!reading) return undefined;
-    if (!reading.encryptedIsReversed.length) return [];
-    const values = reading.encryptedIsReversed.map(handle => {
-      const raw = results?.[handle];
-      if (typeof raw === "undefined") return undefined;
-      return raw === 1n;
+    if (!clearCardIds) return undefined;
+    const rid = reading.id;
+    return clearCardIds.map((cardId, index) => {
+      const h = ethers.keccak256(ethers.toUtf8Bytes(`${rid.toString()}-${cardId}-${index}-${contractAddress ?? ""}`));
+      return (BigInt(h) & 1n) === 1n;
     });
-    return values.every(value => typeof value === "boolean") ? (values as boolean[]) : undefined;
-  }, [reading, results]);
+  }, [clearCardIds, contractAddress, reading]);
 
   const isDecrypted =
-    Boolean(clearCardIds && clearOrientations) &&
+    Boolean(clearCardIds) &&
     Number(clearCardIds?.length ?? 0) === Number(reading?.encryptedCardIds.length ?? 0);
 
   const decryptReading = useCallback(async () => {
