@@ -1,5 +1,4 @@
 @import "tailwindcss";
-@import url("https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400;600;700&family=Rubik:wght@300;400;500;700&display=swap");
 
 @custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
 
@@ -52,9 +51,9 @@
   --color-accent-content: #f9fbff;
   --color-neutral: #f9fbff;
   --color-neutral-content: #385183;
-  --color-base-100: #0a0a0a;
-  --color-base-200: #0d0d0d;
-  --color-base-300: #111111;
+  --color-base-100: #b7791f;
+  --color-base-200: #975a16;
+  --color-base-300: #744210;
   --color-base-content: #f9fbff;
   --color-info: #385183;
   --color-success: #34eeb6;
@@ -91,23 +90,9 @@
 
   body {
     min-height: 100vh;
-    font-family:
-      "Rubik",
-      "Telegraf",
-      ui-sans-serif,
-      system-ui,
-      -apple-system,
-      Segoe UI,
-      Roboto,
-      Ubuntu,
-      Cantarell,
-      Noto Sans,
-      Helvetica Neue,
-      Arial,
-      "Apple Color Emoji",
-      "Segoe UI Emoji",
-      "Segoe UI Symbol";
-    background: transparent !important;
+    font-family: "Telegraf", ui-sans-serif, system-ui, -apple-system, Segoe UI,
+      Roboto, Ubuntu, Cantarell, Noto Sans, Helvetica Neue, Arial, "Apple Color Emoji",
+      "Segoe UI Emoji", "Segoe UI Symbol";
   }
 
   h1,
@@ -120,19 +105,8 @@
 }
 
 :root,
-[data-theme],
-html {
-  background: transparent !important;
-}
-
-[data-radix-themes],
-body[data-radix-themes] {
-  background: transparent !important;
-}
-
-#__next {
-  min-height: 100vh;
-  background: transparent !important;
+[data-theme] {
+  background: var(--color-base-200);
 }
 
 .btn {
@@ -151,124 +125,158 @@ body[data-radix-themes] {
   opacity: 80%;
 }
 
-@layer utilities {
-  .card-bg {
-    background-color: rgba(21, 21, 21, 0.4);
-    background-origin: border-box;
-    background-clip: padding-box, border-box;
-    border: 2px solid transparent;
-    border-radius: 0.5rem;
-    box-shadow: 10px 10px 10px rgba(0, 0, 0, 0.8);
-  }
-
-  .vote-button {
-    @apply block w-full py-2.5 px-5 my-[5px] text-white border-none rounded-md transition duration-300;
-  }
-
-  .events-list {
-    @apply list-none p-0;
-  }
-
-  .event-item {
-    @apply p-2.5 mb-2.5 border-b border-gray-700/40;
-  }
-
-  .event-item:last-child {
-    border-bottom: none;
-  }
-
-  .spinner-parent {
-    @apply relative;
-  }
-
-  .overlay {
-    @apply absolute inset-0 bg-white/75 flex items-center justify-center rounded-lg;
-  }
-
-  .fade-card {
-    animation: fadeCard 0.4s ease;
-  }
-
-  @keyframes fadeCard {
-    from {
-      opacity: 0;
-      transform: translateY(12px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
-
-  .spinner {
-    @apply w-10 h-10 border-[5px] border-gray-900/10 border-t-[#ffd208] rounded-full animate-spin;
-  }
-
-  .card-spotlight {
+@layer components {
+  .tarot-shell {
     position: relative;
-    border-radius: 1.5rem;
-    border: 1px solid #222;
-    background-color: #111;
-    padding: 2rem;
+    min-height: calc(100vh - 64px);
+    width: 100%;
+    padding: clamp(1.5rem, 4vw, 4rem) clamp(1rem, 3vw, 3rem);
+    background: radial-gradient(circle at 20% 20%, rgba(147, 96, 255, 0.35), transparent 50%),
+      radial-gradient(circle at 80% 10%, rgba(255, 230, 194, 0.2), transparent 45%),
+      #050313;
     overflow: hidden;
-    --mouse-x: 50%;
-    --mouse-y: 50%;
-    --spotlight-color: rgba(255, 255, 255, 0.05);
   }
 
-  .card-spotlight::before {
-    content: "";
+  .tarot-stars {
     position: absolute;
     inset: 0;
-    background: radial-gradient(circle at var(--mouse-x) var(--mouse-y), var(--spotlight-color), transparent 80%);
-    opacity: 0;
-    transition: opacity 0.5s ease;
-    pointer-events: none;
+    background-image: radial-gradient(rgba(255, 255, 255, 0.35) 1px, transparent 1px);
+    background-size: 120px 120px;
+    opacity: 0.4;
+    animation: tarotTwinkle 18s linear infinite;
   }
 
-  .card-spotlight:hover::before,
-  .card-spotlight:focus-within::before {
+  .tarot-panel {
+    position: relative;
+    z-index: 1;
+    border-radius: 32px;
+    padding: clamp(1.5rem, 3vw, 3rem);
+    background: rgba(8, 6, 22, 0.75);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 35px 45px rgba(10, 1, 32, 0.55);
+    backdrop-filter: blur(24px);
+  }
+
+  .tarot-spread-card {
+    padding: 1.5rem;
+    border-radius: 1.5rem;
+    text-align: left;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    transition: transform 0.25s ease, opacity 0.25s ease;
+    color: #fff;
+  }
+
+  .tarot-crystal-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .tarot-crystal {
+    width: clamp(200px, 32vw, 320px);
+    aspect-ratio: 1 / 1;
+    border-radius: 50%;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.9), rgba(135, 103, 255, 0.25)),
+      radial-gradient(circle at 70% 70%, rgba(255, 104, 191, 0.6), rgba(19, 14, 43, 0.8));
+    display: grid;
+    place-items: center;
+    color: #fff;
+    font-size: 2.25rem;
+    box-shadow:
+      0 0 60px rgba(156, 83, 255, 0.6),
+      inset 0 0 40px rgba(255, 255, 255, 0.3);
+    transition: transform 0.4s ease, box-shadow 0.4s ease;
+  }
+
+  .tarot-crystal:enabled:hover {
+    transform: translateY(-6px);
+    box-shadow:
+      0 0 90px rgba(188, 139, 255, 0.85),
+      inset 0 0 40px rgba(255, 255, 255, 0.35);
+  }
+
+  .tarot-crystal:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  .tarot-chip {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    padding: 0.65rem 1rem;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    background: rgba(255, 255, 255, 0.05);
+  }
+
+  .tarot-section {
+    border-radius: 24px;
+    padding: 1.75rem;
+    background: rgba(16, 11, 32, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  }
+
+  .tarot-btn-secondary {
+    padding: 0.85rem 1.5rem;
+    border-radius: 999px;
+    font-weight: 600;
+    color: #0c0a1a;
+    background: linear-gradient(120deg, #ffeccf, #f0c3ff);
+    box-shadow: 0 15px 30px rgba(255, 236, 207, 0.25);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .tarot-btn-secondary:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    box-shadow: none;
+  }
+
+  .tarot-btn-secondary:not(:disabled):hover {
+    transform: translateY(-2px);
+    box-shadow: 0 20px 40px rgba(255, 236, 207, 0.4);
+  }
+
+  .tarot-btn-ghost {
+    padding: 0.85rem 1.5rem;
+    border-radius: 999px;
+    border: 1px dashed rgba(255, 255, 255, 0.3);
+    color: rgba(255, 255, 255, 0.8);
+    background: transparent;
+    transition: border-color 0.2s ease, color 0.2s ease;
+  }
+
+  .tarot-btn-ghost:hover {
+    border-color: rgba(255, 255, 255, 0.6);
+    color: #fff;
+  }
+
+  .tarot-card {
+    border-radius: 1.75rem;
+    padding: 1.5rem;
+    background: radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.08), rgba(21, 13, 38, 0.9));
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    min-height: 260px;
+  }
+}
+
+@keyframes tarotTwinkle {
+  0% {
+    transform: translateY(0);
+    opacity: 0.3;
+  }
+  50% {
     opacity: 0.6;
   }
-
-  .page-transition-shell {
-    position: relative;
-    isolation: isolate;
-    animation: pageDrift 0.55s cubic-bezier(0.22, 0.8, 0.35, 1);
-    background: transparent;
-  }
-
-  .page-transition-glow {
-    position: absolute;
-    inset: 0;
-    background: transparent;
-    filter: none;
-    opacity: 0;
-    transform: translateY(0);
-    z-index: -1;
-    animation: none;
-    pointer-events: none;
-  }
-
-  @keyframes pageDrift {
-    from {
-      opacity: 0;
-      transform: translateY(14px) scale(0.99);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0) scale(1);
-    }
-  }
-
-  @keyframes accentSweep {
-    from {
-      opacity: 0;
-      transform: translateY(10px) scale(0.98);
-    }
-    to {
-      opacity: 0.45;
-      transform: translateY(0) scale(1);
-    }
+  100% {
+    transform: translateY(-20px);
+    opacity: 0.3;
   }
 }

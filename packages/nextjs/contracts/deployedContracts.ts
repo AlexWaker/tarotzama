@@ -6,8 +6,8 @@ import { GenericContractsDeclaration } from "~~/utils/helper/contract";
 
 const deployedContracts = {
   11155111: {
-    FHECounter: {
-      address: "0x8C11e1BC7BD544884E5C7A78cF096a1330Aed48c",
+    Tarot: {
+      address: "0xdaC8503FF83abf5CE87f53fC27665468E0335005",
       abi: [
         {
           inputs: [],
@@ -15,185 +15,32 @@ const deployedContracts = {
           type: "error",
         },
         {
-          inputs: [],
-          name: "confidentialProtocolId",
-          outputs: [
-            {
-              internalType: "uint256",
-              name: "",
-              type: "uint256",
-            },
-          ],
-          stateMutability: "view",
-          type: "function",
-        },
-        {
-          inputs: [
-            {
-              internalType: "externalEuint32",
-              name: "inputEuint32",
-              type: "bytes32",
-            },
-            {
-              internalType: "bytes",
-              name: "inputProof",
-              type: "bytes",
-            },
-          ],
-          name: "decrement",
-          outputs: [],
-          stateMutability: "nonpayable",
-          type: "function",
-        },
-        {
-          inputs: [],
-          name: "getCount",
-          outputs: [
-            {
-              internalType: "euint32",
-              name: "",
-              type: "bytes32",
-            },
-          ],
-          stateMutability: "view",
-          type: "function",
-        },
-        {
-          inputs: [
-            {
-              internalType: "externalEuint32",
-              name: "inputEuint32",
-              type: "bytes32",
-            },
-            {
-              internalType: "bytes",
-              name: "inputProof",
-              type: "bytes",
-            },
-          ],
-          name: "increment",
-          outputs: [],
-          stateMutability: "nonpayable",
-          type: "function",
-        },
-      ],
-      inheritedFunctions: {},
-      deployedOnBlock: 9629292,
-    },
-    SimpleVoting: {
-      address: "0x32703A93855F5781772561B9A003e5579c9fF0ce",
-      abi: [
-        {
-          inputs: [],
-          name: "AlreadyVoted",
-          type: "error",
-        },
-        {
-          inputs: [],
-          name: "DeadlineNotReached",
-          type: "error",
-        },
-        {
-          inputs: [],
-          name: "DeadlineTooSoon",
-          type: "error",
-        },
-        {
-          inputs: [],
-          name: "InvalidQuestionInput",
-          type: "error",
-        },
-        {
-          inputs: [],
-          name: "PollClosed",
-          type: "error",
-        },
-        {
-          inputs: [],
-          name: "QuestionDoesNotExist",
-          type: "error",
-        },
-        {
-          inputs: [],
-          name: "ResultsAlreadyOpened",
-          type: "error",
-        },
-        {
-          inputs: [],
-          name: "ZamaProtocolUnsupported",
-          type: "error",
-        },
-        {
           anonymous: false,
           inputs: [
             {
               indexed: true,
               internalType: "uint256",
-              name: "questionId",
+              name: "readingId",
               type: "uint256",
             },
             {
               indexed: true,
               internalType: "address",
-              name: "creator",
-              type: "address",
-            },
-            {
-              indexed: false,
-              internalType: "string",
-              name: "prompt",
-              type: "string",
-            },
-            {
-              indexed: false,
-              internalType: "uint64",
-              name: "deadline",
-              type: "uint64",
-            },
-          ],
-          name: "QuestionCreated",
-          type: "event",
-        },
-        {
-          anonymous: false,
-          inputs: [
-            {
-              indexed: true,
-              internalType: "uint256",
-              name: "questionId",
-              type: "uint256",
-            },
-          ],
-          name: "ResultsOpened",
-          type: "event",
-        },
-        {
-          anonymous: false,
-          inputs: [
-            {
-              indexed: true,
-              internalType: "uint256",
-              name: "questionId",
-              type: "uint256",
-            },
-            {
-              indexed: true,
-              internalType: "address",
-              name: "voter",
+              name: "querent",
               type: "address",
             },
           ],
-          name: "VoteCast",
+          name: "ReadingRequested",
           type: "event",
         },
         {
           inputs: [],
-          name: "MIN_DURATION",
+          name: "DECK_SIZE",
           outputs: [
             {
-              internalType: "uint64",
+              internalType: "uint8",
               name: "",
-              type: "uint64",
+              type: "uint8",
             },
           ],
           stateMutability: "view",
@@ -215,86 +62,37 @@ const deployedContracts = {
         {
           inputs: [
             {
-              internalType: "string",
-              name: "prompt",
-              type: "string",
-            },
-            {
-              internalType: "string",
-              name: "answerA",
-              type: "string",
-            },
-            {
-              internalType: "string",
-              name: "answerB",
-              type: "string",
-            },
-            {
-              internalType: "string",
-              name: "image",
-              type: "string",
-            },
-            {
-              internalType: "uint64",
-              name: "deadline",
-              type: "uint64",
-            },
-          ],
-          name: "createQuestion",
-          outputs: [
-            {
               internalType: "uint256",
-              name: "questionId",
+              name: "_readingId",
               type: "uint256",
             },
           ],
-          stateMutability: "nonpayable",
-          type: "function",
-        },
-        {
-          inputs: [
-            {
-              internalType: "uint256",
-              name: "questionId",
-              type: "uint256",
-            },
-          ],
-          name: "getQuestion",
+          name: "getReading",
           outputs: [
             {
-              internalType: "string",
-              name: "prompt",
-              type: "string",
+              internalType: "uint256",
+              name: "id",
+              type: "uint256",
             },
             {
-              internalType: "address",
-              name: "createdBy",
-              type: "address",
+              internalType: "uint256",
+              name: "timestamp",
+              type: "uint256",
             },
             {
-              internalType: "string[2]",
-              name: "answers",
-              type: "string[2]",
+              internalType: "uint8",
+              name: "spreadType",
+              type: "uint8",
             },
             {
-              internalType: "string",
-              name: "image",
-              type: "string",
+              internalType: "euint8[]",
+              name: "encryptedCardIds",
+              type: "bytes32[]",
             },
             {
-              internalType: "uint64",
-              name: "deadline",
-              type: "uint64",
-            },
-            {
-              internalType: "bool",
-              name: "resultsOpened",
-              type: "bool",
-            },
-            {
-              internalType: "euint32[2]",
-              name: "encryptedTally",
-              type: "bytes32[2]",
+              internalType: "ebool[]",
+              name: "encryptedIsReversed",
+              type: "bytes32[]",
             },
           ],
           stateMutability: "view",
@@ -302,7 +100,7 @@ const deployedContracts = {
         },
         {
           inputs: [],
-          name: "getQuestionsCount",
+          name: "nextReadingId",
           outputs: [
             {
               internalType: "uint256",
@@ -320,17 +118,32 @@ const deployedContracts = {
               name: "",
               type: "uint256",
             },
-            {
-              internalType: "address",
-              name: "",
-              type: "address",
-            },
           ],
-          name: "hasVoted",
+          name: "readings",
           outputs: [
             {
+              internalType: "uint256",
+              name: "id",
+              type: "uint256",
+            },
+            {
+              internalType: "address",
+              name: "querent",
+              type: "address",
+            },
+            {
+              internalType: "uint256",
+              name: "timestamp",
+              type: "uint256",
+            },
+            {
+              internalType: "uint8",
+              name: "spreadType",
+              type: "uint8",
+            },
+            {
               internalType: "bool",
-              name: "",
+              name: "isFulfilled",
               type: "bool",
             },
           ],
@@ -340,19 +153,36 @@ const deployedContracts = {
         {
           inputs: [
             {
+              internalType: "uint8",
+              name: "_spreadType",
+              type: "uint8",
+            },
+          ],
+          name: "requestReading",
+          outputs: [
+            {
               internalType: "uint256",
-              name: "questionId",
+              name: "",
               type: "uint256",
             },
           ],
-          name: "openResults",
-          outputs: [],
           stateMutability: "nonpayable",
           type: "function",
         },
         {
-          inputs: [],
-          name: "questionsCount",
+          inputs: [
+            {
+              internalType: "address",
+              name: "",
+              type: "address",
+            },
+            {
+              internalType: "uint256",
+              name: "",
+              type: "uint256",
+            },
+          ],
+          name: "userReadingIds",
           outputs: [
             {
               internalType: "uint256",
@@ -361,34 +191,11 @@ const deployedContracts = {
             },
           ],
           stateMutability: "view",
-          type: "function",
-        },
-        {
-          inputs: [
-            {
-              internalType: "uint256",
-              name: "questionId",
-              type: "uint256",
-            },
-            {
-              internalType: "externalEuint8",
-              name: "encryptedChoice",
-              type: "bytes32",
-            },
-            {
-              internalType: "bytes",
-              name: "inputProof",
-              type: "bytes",
-            },
-          ],
-          name: "vote",
-          outputs: [],
-          stateMutability: "nonpayable",
           type: "function",
         },
       ],
       inheritedFunctions: {},
-      deployedOnBlock: 9630664,
+      deployedOnBlock: 9937490,
     },
   },
 } as const;

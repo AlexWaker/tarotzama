@@ -5,6 +5,7 @@ import "@nomicfoundation/hardhat-verify";
 import "@typechain/hardhat";
 import "hardhat-deploy";
 import "hardhat-gas-reporter";
+import "dotenv/config";
 import type { HardhatUserConfig } from "hardhat/config";
 import { vars } from "hardhat/config";
 import "solidity-coverage";
@@ -14,8 +15,8 @@ import "./tasks/FHECounter";
 
 // Run 'npx hardhat vars setup' to see the list of variables that need to be set
 
-const MNEMONIC: string = vars.get("MNEMONIC", "rotate gloom dad tunnel hollow often gap very step owner auto turkey");
-const INFURA_API_KEY: string = vars.get("INFURA_API_KEY", "zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz");
+const MNEMONIC: string = process.env.MNEMONIC as string;
+const INFURA_API_KEY: string = process.env.INFURA_API_KEY as string;
 
 const config: HardhatUserConfig = {
   defaultNetwork: "hardhat",
@@ -55,7 +56,7 @@ const config: HardhatUserConfig = {
         count: 10,
       },
       chainId: 11155111,
-      url: `https://eth-sepolia.g.alchemy.com/v2/${vars.get("ALCHEMY_API_KEY")}`,
+      url: `https://sepolia.infura.io/v3/${INFURA_API_KEY}`,
     },
   },
   paths: {

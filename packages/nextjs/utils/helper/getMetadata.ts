@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { SHARE_BANNER_IMAGE } from "./shareConfig";
 
 const baseUrl = process.env.VERCEL_PROJECT_PRODUCTION_URL
   ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
@@ -9,13 +8,13 @@ const titleTemplate = "%s | helper 2";
 export const getMetadata = ({
   title,
   description,
-  imageRelativePath,
+  imageRelativePath = "/thumbnail.jpg",
 }: {
   title: string;
   description: string;
   imageRelativePath?: string;
 }): Metadata => {
-  const imageUrl = imageRelativePath ? `${baseUrl}${imageRelativePath}` : SHARE_BANNER_IMAGE;
+  const imageUrl = `${baseUrl}${imageRelativePath}`;
 
   return {
     metadataBase: new URL(baseUrl),
@@ -47,8 +46,8 @@ export const getMetadata = ({
     icons: {
       icon: [
         {
-          url: "/shadow-logo.png",
-          sizes: "256x256",
+          url: "/ball.png",
+          sizes: "32x32",
           type: "image/png",
         },
       ],

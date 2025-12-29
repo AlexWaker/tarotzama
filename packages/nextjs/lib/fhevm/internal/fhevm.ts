@@ -215,6 +215,13 @@ export const createFhevmInstance = async (parameters: {
 
   const relayerSDK = (window as unknown as FhevmWindowType).relayerSDK;
 
+  if (chainId !== 11155111) {
+    throwFhevmError(
+      "UNSUPPORTED_NETWORK",
+      `FHEVM Relayer SDK (SepoliaConfig) only supports Sepolia (chainId 11155111). Current chainId=${chainId}. Please switch network to Sepolia, or run a FHEVM-ready Hardhat node for local testing.`,
+    );
+  }
+
   const aclAddress = (relayerSDK as FhevmRelayerSDKType).SepoliaConfig.aclContractAddress;
   if (!checkIsAddress(aclAddress)) {
     throw new Error(`Invalid address: ${aclAddress}`);
