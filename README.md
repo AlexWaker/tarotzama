@@ -39,14 +39,14 @@ tarotzama/
 
 ```mermaid
 flowchart LR
-  U[User] -->|Question + Click crystal ball| UI[Next.js UI<br/>packages/nextjs]
-  UI -->|requestReading(spreadType)| CHAIN[(FHEVM Tarot.sol)]
+  U[User] -->|Question + Click crystal ball| UI[Next.js UI (packages/nextjs)]
+  UI -->|requestReading| CHAIN[(FHEVM Tarot contract)]
   CHAIN -->|Encrypted handles| UI
 
-  UI -->|Decrypt via Relayer SDK| RELAYER[Relayer SDK<br/>WASM + KMS params]
+  UI -->|Decrypt via Relayer SDK| RELAYER[Relayer SDK (WASM + KMS params)]
   RELAYER -->|Clear card IDs| UI
 
-  UI -->|POST /api/tarot/analyze<br/>question + cards| API[Next.js Route Handler<br/>app/api/tarot/analyze]
+  UI -->|POST /api/tarot/analyze (question + cards)| API[Next.js Route Handler (app/api/tarot/analyze)]
   API -->|Server-side fetch| OAI[OpenAI API]
   OAI -->|Interpretation text| API --> UI
 ```
@@ -57,17 +57,17 @@ flowchart LR
 sequenceDiagram
   participant User
   participant UI as Next.js UI
-  participant Chain as FHEVM (Tarot.sol)
+  participant Chain as FHEVM Tarot contract
   participant Relayer as Relayer SDK
-  participant API as /api/tarot/analyze
+  participant API as api/tarot/analyze
   participant OpenAI
 
   User->>UI: Enter question
   User->>UI: Click crystal ball
-  UI->>Chain: requestReading(spreadType)
+  UI->>Chain: requestReading
   Chain-->>UI: ReadingRequested + encrypted handles
   User->>UI: Click Decrypt
-  UI->>Relayer: decrypt(handles)
+  UI->>Relayer: decrypt handles
   Relayer-->>UI: clear card IDs
   UI->>API: POST question + cards
   API->>OpenAI: chat completion
