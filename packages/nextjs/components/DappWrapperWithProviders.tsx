@@ -29,12 +29,18 @@ export const DappWrapperWithProviders = ({ children }: { children: React.ReactNo
     setMounted(true);
   }, []);
 
+  // RainbowKit injects styles/attributes (e.g. data-rk) that can mismatch SSR HTML.
+  // Rendering it only after mount avoids Next.js hydration mismatch.
+  if (!mounted) {
+    return null;
+  }
+
   return (
     <WagmiProvider config={wagmiConfig}>
       <QueryClientProvider client={queryClient}>
         <RainbowKitProvider
           avatar={BlockieAvatar}
-          theme={mounted ? (isDarkMode ? darkTheme() : lightTheme()) : lightTheme()}
+          theme={isDarkMode ? darkTheme() : lightTheme()}
         >
           <ProgressBar height="3px" color="#2299dd" />
           <div className={`flex flex-col min-h-screen`}>

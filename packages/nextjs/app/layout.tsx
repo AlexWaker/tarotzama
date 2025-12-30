@@ -10,8 +10,8 @@ export const revalidate = false;
 export const dynamic = "force-dynamic";
 
 export const metadata = getMetadata({
-  title: "Zama FHE · 塔罗神谕",
-  description: "使用 Zama FHEVM 链上占卜，水晶球即点即得启示。",
+  title: "Zama FHE · Tarot Oracle",
+  description: "On-chain divination powered by Zama FHEVM—tap the crystal ball for instant guidance.",
   imageRelativePath: "/3612166.png",
 });
 
