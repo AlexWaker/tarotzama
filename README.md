@@ -2,12 +2,20 @@
 
 ![TarotZama Banner](banner.png)
 
-TarotZama is a tarot oracle dApp built on **Zama FHEVM**: encrypted on-chain draws, local decryption, and an optional AI interpretation layer.
+TarotZama is a **privacy-first Tarot oracle** powered by **Zama FHEVM**.
+Your cards are **drawn on-chain in encrypted form**, then **decrypted locally in your browser** — **only you can know the result**.
 
-- **Encrypted draw on-chain**: the chain stores encrypted card IDs (no clear draw leaks).
-- **Local decryption**: your wallet decrypts via the Relayer SDK.
-- **Upright / reversed**: generated client-side (stable per reading) to avoid biased randomness in some chain environments.
-- **AI interpretation (OpenAI)**: your question + the drawn cards are analyzed server-side and rendered under the spread.
+## Why TarotZama
+
+- **Zama FHE on-chain draw**: the contract stores only **ciphertexts** — no plaintext card IDs ever hit the chain.
+- **Decrypt in your wallet**: clear results are revealed **client-side** via the Relayer SDK — **you and only you** see the cards.
+- **Shareable experience, private truth**: stream it, screenshot it, keep it secret — the protocol doesn’t leak your reading.
+- **AI interpretation**: after you decrypt, TarotZama can generate a tailored interpretation from your question + spread.
+
+## Core promise
+
+> **Your Tarot reading is yours alone.**  
+> On-chain computation stays encrypted; the clear meaning appears only in your browser.
 
 ## Table of contents
 
