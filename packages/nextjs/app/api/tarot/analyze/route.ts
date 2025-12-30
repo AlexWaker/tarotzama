@@ -48,48 +48,68 @@ export async function POST(req: Request) {
     .slice(0, 10)
     .map(
       c =>
-        `${c.index + 1}. ${c.name}（${c.suit}，${c.reversed ? "逆位" : "正位"}）\n- 关键词：${(c.keywords ?? [])
+        `${c.index + 1}. ${c.name} (${c.suit}, ${c.reversed ? "Reversed" : "Upright"})\n- Keywords: ${(c.keywords ?? [])
           .slice(0, 8)
-          .join("、")}\n- 描述：${c.description}`,
+          .join(", ")}\n- Description: ${c.description}`,
     )
     .join("\n\n");
 
   const sys = [
-    "你是一位专业但克制的塔罗占卜师（偏心理学与行动建议）。",
-    "你会基于用户的问题与抽到的牌，给出结构化解读：",
-    "1) 一段总体结论（2-4句）",
-    "2) 每张牌一句要点（5张时可更详细），强调正/逆位含义与与问题的关联",
-    "3) 可执行建议（3-5条）",
-    "4) 风险/盲点提醒（1-2条）",
-    "不要宣称确定未来，不要提及“我无法访问链上数据”。请用用户问题的语言回复用户。",
+    "You are a professional, grounded tarot reader with restraint (leaning toward psychology and practical action).",
+    "Based on the user's question and the drawn cards, provide a structured interpretation with:",
+    "1) A short overall takeaway (2–4 sentences).",
+    "2) One key point per card (more detail is fine for 5-card spreads), explicitly tying upright/reversed meaning back to the question.",
+    "3) Actionable next steps (3–5 bullets).",
+    "4) Risks / blind spots (1–2 bullets).",
+    "Do not claim certainty about the future, and do not mention any limitations like “I cannot access on-chain data.” Reply in the same language as the user's question.",
   ].join("\n");
 
   const user = [
-    `用户问题：${question}`,
-    `牌阵类型：${body.spreadType}（提示：0=单张，1=三张，2=五张）`,
-    body.readingId ? `readingId：${body.readingId}` : "",
+    `User question: ${question}`,
+    `Spread type: ${body.spreadType} (hint: 0=single, 1=three, 2=five)`,
+    body.readingId ? `readingId: ${body.readingId}` : "",
     "",
-    "抽牌结果：",
+    "Drawn cards:",
     promptCards,
   ]
     .filter(Boolean)
     .join("\n");
 
-  const resp = await fetch("https://api.openai.com/v1/chat/completions", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${apiKey}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      model: "gpt-4o-mini",
-      temperature: 0.7,
-      messages: [
-        { role: "system", content: sys },
-        { role: "user", content: user },
-      ],
-    }),
-  });
+  const controller = new AbortController();
+  const timeoutMs = 25_000;
+  const timeout = setTimeout(() => controller.abort(), timeoutMs);
+
+  let resp: Response;
+  try {
+    resp = await fetch("https://api.openai.com/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: "gpt-4o-mini",
+        temperature: 0.7,
+        max_tokens: 900,
+        messages: [
+          { role: "system", content: sys },
+          { role: "user", content: user },
+        ],
+      }),
+      signal: controller.signal,
+    });
+  } catch (e: any) {
+    const isAbort = e?.name === "AbortError";
+    return NextResponse.json(
+      {
+        error: isAbort ? "OpenAI request timed out" : "OpenAI request failed to fetch",
+        details: e instanceof Error ? e.message : String(e),
+      },
+      { status: isAbort ? 504 : 500 },
+    );
+  } finally {
+    clearTimeout(timeout);
+  }
 
   if (!resp.ok) {
     const text = await resp.text().catch(() => "");

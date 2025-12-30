@@ -96,9 +96,9 @@ export const TarotOracle = () => {
   const readingKey = tarot.readingId?.toString() ?? "";
 
   useEffect(() => {
-    // Trigger analysis only for 5-card results, after decrypt, and only once per readingId.
+    // Trigger analysis for any spread size, after decrypt, and only once per readingId.
     if (!tarot.isDecrypted) return;
-    if (!resolvedCards || resolvedCards.length !== 5) return;
+    if (!resolvedCards || resolvedCards.length === 0) return;
     if (!submittedQuestion.trim()) return;
     if (!readingKey) return;
     if (aiStatus === "loading") return;
@@ -125,13 +125,15 @@ export const TarotOracle = () => {
             description: c.description ?? "",
           })),
         };
-
+        const timeoutMs = 25_000;
+        const timeout = window.setTimeout(() => controller.abort(), timeoutMs);
         const res = await fetch("/api/tarot/analyze", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
           signal: controller.signal,
         });
+        window.clearTimeout(timeout);
         const json = (await res.json().catch(() => ({}))) as any;
         if (!res.ok) {
           throw new Error(json?.error || "AI analyze failed");
@@ -350,21 +352,21 @@ export const TarotOracle = () => {
         {(
           <section className="tarot-section space-y-3">
             <div className="flex items-center justify-between flex-wrap gap-3">
-              <h3 className="text-xl font-semibold text-white">水晶球的启示</h3>
-              <span className="text-xs text-slate-400">基于你的问题 + {resolvedCards?.length} 张牌</span>
+              <h3 className="text-xl font-semibold text-white">The Crystal Ball's Insight</h3>
+              <span className="text-xs text-slate-400">Based on your question + {resolvedCards?.length} cards</span>
             </div>
             {!submittedQuestion.trim() ? (
-              <p className="text-sm text-slate-300">先在上方输入框填写你的疑问，然后点击水晶球提交并抽牌。</p>
+              <p className="text-sm text-slate-300">Enter your question above, then tap the crystal ball to submit and draw.</p>
             ) : aiStatus === "loading" ? (
-              <p className="text-sm text-slate-300">水晶球正在解读中…</p>
+              <p className="text-sm text-slate-300">The crystal ball is interpreting…</p>
             ) : aiStatus === "error" ? (
-              <p className="text-sm text-rose-200">水晶球解读失败：{aiError}</p>
+              <p className="text-sm text-rose-200">Oracle reading failed: {aiError}</p>
             ) : aiStatus === "done" ? (
               <div className="rounded-2xl border border-white/10 bg-black/25 backdrop-blur-xl p-4">
                 <pre className="whitespace-pre-wrap text-sm text-slate-100 leading-relaxed">{aiAnalysis}</pre>
               </div>
             ) : (
-              <p className="text-sm text-slate-300">解密完成后将自动生成解读。</p>
+              <p className="text-sm text-slate-300">After decryption, your interpretation will appear automatically.</p>
             )}
           </section>
         )}

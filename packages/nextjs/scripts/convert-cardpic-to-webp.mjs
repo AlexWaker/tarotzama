@@ -88,7 +88,6 @@ async function main() {
     throw new Error(`Invalid --maxWidth=${MAX_WIDTH}. Expected >= 0`);
   }
 
-  await ensureDir(OUT_DIR);
   await ensureDir(PUBLIC_OUT_DIR);
 
   const files = await listPngFiles(INPUT_DIR);

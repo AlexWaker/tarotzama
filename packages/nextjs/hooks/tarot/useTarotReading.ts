@@ -73,7 +73,7 @@ export const useTarotReading = ({ instance, initialMockChains }: UseTarotReading
     args: readingId !== null ? [readingId] : undefined,
     query: {
       // Use wagmi's public client for reads; don't block on ethersReadonlyProvider which may be unset due to RPC issues.
-      enabled: Boolean(readingId !== null && hasContract),
+      enabled: Boolean(readingId !== null && hasContract && ethersReadonlyProvider ),
       refetchOnWindowFocus: false,
     },
   });

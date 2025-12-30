@@ -1,161 +1,136 @@
-# Shadow — Confidential Voting dApp
+# TarotZama — FHEVM Tarot Oracle + AI Interpretation
 
-![Shadow Banner](packages/nextjs/public/shadow-banner.jpg)
+TarotZama is a tarot oracle dApp built on **Zama FHEVM**:
 
-
-Shadow is a premium voting experience built on Zama’s FHEVM stack. Every ballot is encrypted in the browser, transmitted through the Relayer SDK, and tallied inside a fully homomorphic smart contract. Creators stay in control of when clear counts are revealed, while voters get verifiable privacy without sacrificing transparency or UX.
-
-## Shadow Demo Video
-
-[![IMAGE ALT TEXT HERE](https://img.youtube.com/vi/_APq-gQ_3uc/0.jpg)](https://www.youtube.com/watch?v=_APq-gQ_3uc)
-
-
-## Why Shadow
-
-- **Encrypted end‑to‑end** – ballots never leak; tallies decrypt only when the owner publishes results with relayer proofs.
-- **Shareable yet private** – public polls surface on Discover with Farcaster/X share buttons, private polls stay link‑only with clipboard protected links.
-- **Diagnostics baked in** – live wallet/network/handle diagnostics let auditors confirm the poll state before revealing counts.
-- **Premium glassmorphism UI** – persistent Silk background, polished cards, and glowing notifications keep the dApp cohesive with the Shadow brand.
-
-### Problems solved
-
-Traditional DAO polls expose votes as soon as they’re cast and require trust in the frontend. Shadow removes that trust gap by:
-
-1. Using Zama’s FHE runtime plus the Relayer SDK so the chain can verify encrypted tallies.
-2. Keeping voters anonymous while still producing on‑chain evidence once the owner decrypts.
-3. Providing distribution UX (share buttons, secure links) that matches public social expectations.
-
-## Architecture at a glance
-
-| Layer | Purpose |
-| --- | --- |
-| **`packages/nextjs`** | Next.js 15 + Radix UI app, Wagmi/RainbowKit wallet flow, custom Silk background & notification system. |
-| **`packages/hardhat`** | Hardhat workspace with `SimpleVoting.sol` and helper scripts for deploying to Sepolia or localhost. |
-| **`packages/nextjs/lib/fhevm`** | Local FHEVM hooks mirroring Zama’s SDK for client encryption/decryption and relayer storage. |
-| **`packages/nextjs/utils/helper`** | Shared helpers: toast notifications, metadata, contract utilities, etc. |
-
-Shadow runs entirely client side, but the background silk animation and Dapp wrapper sit outside page transitions so navigation never flashes. Notifications originate from a centralized helper to keep styling and copy consistent.
-
-## User flow overview
-
-1. **Create a vote** – connect a wallet, describe the prompt, pick Public or Private, supply optional cover art, and set a deadline. The frontend encrypts answers locally, submits via `createQuestion`, and shows a toast for every state (loading/success/error).
-2. **Share** – public polls show Farcaster + X pill buttons, private polls expose a copy‑link icon only. Every share is a Zama‑styled floating action button.
-3. **Vote** – voters land on `/vote?questionId=…`, see the redesigned poll card, diagnostics, and answer buttons that stay disabled until the poll is live and they haven’t voted.
-4. **Reveal** – once the creator decides to publish, they decrypt via the relayer workflow; tallies update everywhere but stay auditable with the diagnostic sidebar.
+- **Cards are drawn on-chain in encrypted form** (the chain never sees your clear draw).
+- **Your wallet decrypts locally** via the Relayer SDK (only you can see the clear card IDs).
+- **Upright / reversed** is generated client-side (stable per reading) to avoid biased randomness in some chain environments.
+- **OpenAI-powered interpretation**: your question + the drawn cards are sent to a Next.js server route, and the analysis is shown under the spread.
 
 ## Repository layout
 
-```
-shadow-confidential-voting-dapp/
+```text
+tarotzama/
 ├── packages/
-│   ├── nextjs/        # Shadow frontend (app router, components, hooks, styles)
-│   └── hardhat/       # Contracts, deploy scripts, Hardhat tasks & tests
-├── scripts/           # Helpers (relayer assets, ABI generation, etc.)
-├── assets/            # Brand assets (logos, fonts, icons)
+│   ├── hardhat/   # Tarot.sol + deploy scripts (localhost / sepolia)
+│   └── nextjs/    # Next.js App Router frontend + FHEVM hooks + AI route
+├── scripts/       # ABI/codegen helpers (used by root scripts)
 └── README.md
 ```
 
-## Getting started
+## Prerequisites
 
-### Prerequisites
+- Node.js **20+**
+- `pnpm` (via Corepack or installed manually)
+- A browser wallet (MetaMask / RainbowKit-compatible)
 
-- Node.js 20+
-- `pnpm` (Corepack or manual install)
-- Git + a wallet such as MetaMask/Rainbow
-- Optional: an Alchemy/Infura RPC key and WalletConnect Project ID for production
+## Quick start (frontend)
 
-### Clone & install
+Install dependencies at repo root:
 
 ```bash
-git clone <your-fork-url> shadow-confidential-voting-dapp
-cd shadow-confidential-voting-dapp
 pnpm install
 ```
 
-### Environment
+Create `packages/nextjs/.env.local`:
 
 ```bash
-cp packages/nextjs/.env.example packages/nextjs/.env.local
+OPENAI_API_KEY=your_openai_key
 ```
 
-Fill the following:
+Then run:
 
-| Variable | Description |
-| --- | --- |
-| `NEXT_PUBLIC_ALCHEMY_API_KEY` | RPC provider for Sepolia/mainnet fallback. |
-| `NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID` | WalletConnect V2 client ID. |
-| `NEXT_PUBLIC_CHAIN_ID` | Defaults to `11155111` (Sepolia). Set to your deployment chain. |
-| `NEXT_PUBLIC_CONTRACT_ADDRESS` | Address of the deployed `SimpleVoting` contract. |
+```bash
+pnpm start
+```
 
-If you deploy to a different network, also update `packages/nextjs/contracts/deployedContracts.ts`.
+This starts the Next.js app (default `http://localhost:3000`).
 
-### Run the stack
+### Optional frontend env vars
 
-1. **Start Hardhat (optional but recommended for local testing)**
-   ```bash
-   cd packages/hardhat
-   pnpm chain        # start local node
-   pnpm deploy:localhost
-   ```
-2. **Run Shadow**
-   ```bash
-   cd ../nextjs
-   pnpm dev          # http://localhost:3000
-   ```
-3. **Production build**
-   ```bash
-   pnpm build && pnpm start
-   ```
+All optional (the app can still run without them in development, but RPC stability is better with your own keys):
 
-## Using Shadow
+- `NEXT_PUBLIC_ALCHEMY_API_KEY`: improves RPC reliability and avoids browser CORS issues with some public RPCs.
+- `NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID`: WalletConnect project id (a default is provided in code).
+- `NEXT_PUBLIC_CHAIN_ID`: set to `11155111` (Sepolia) or `31337` (local hardhat).
 
-![Create Page](packages/nextjs/public/Create-page.jpg)
+## Deploy the Tarot contract
 
-### Creating a vote
+### Sepolia
 
-- Click **Create a vote** in the hero card or scroll to the builder.
-- Choose **Public** to list on Discover or **Private** to keep it invitation-only.
-- Provide optional artwork; Shadow falls back to the brand logo if none is supplied.
-- Set a deadline at least 15 minutes in the future. A live countdown + diagnostics help watchers understand status.
-- Submit — watch the new toast notifications: connect hint → validation error → encrypting/loading → success.
+Create `packages/hardhat/.env`:
 
-### Voting & sharing
+```bash
+MNEMONIC="your twelve words ..."
+INFURA_API_KEY="your_infura_key"
+```
 
-![Discover Page](packages/nextjs/public/Discover-Page.jpg)
+Deploy and generate frontend contract typings:
 
-- Visit `/discover` to browse curated polls. Each card exposes:
-  - Creator avatar (logo placeholder if missing)
-  - Status pills (Public/Private, question number, Confidential flag)
-  - Deadline, vote count, publish state
-  - Contextual share buttons (Farcaster, X, or secure copy)
-- Clicking **View & Vote** opens `/vote?questionId=…` with the larger poll card, diagnostics sidebar, and action buttons.
+```bash
+pnpm deploy:sepolia
+```
 
-### Results & diagnostics
+This runs:
+- `packages/hardhat` deployment to Sepolia
+- `pnpm generate` which regenerates TypeScript ABIs and updates `packages/nextjs/contracts/deployedContracts.ts`
 
-![Vote Page](packages/nextjs/public/Vote-Page.jpg)
+### Local hardhat
 
-- When a poll is closed, creators reveal encrypted tallies via relayer actions exposed in the diagnostics panel.
-- The bottom card narrates the privacy guarantees: encrypted ballots, proofs upon reveal, and a “Secure link · Encrypted voters” badge for auditors.
+Create `packages/hardhat/.env` (required because the hardhat config reads `MNEMONIC`):
 
-## Privacy & UX details
+```bash
+MNEMONIC="test test test test test test test test test test test junk"
+INFURA_API_KEY="unused_for_local_but_required_by_config"
+```
 
-- **Persistent silk background** – rendered once at the provider level, so scroll/route transitions never flash white.
-- **Shadow toasts** – originate from `notification.tsx` and surface in the top-right with a soft yellow glow matching the brand.
-- **Share buttons** – real Farcaster/X icons, 3D pill shapes, and carved corners that dock into each poll card.
-- **Placeholders** – missing avatars automatically swap to `shadow-logo.png`, keeping layout consistent.
+Run a local node + deploy + generate:
+
+```bash
+pnpm chain
+pnpm deploy:localhost
+```
+
+Then set in `packages/nextjs/.env.local`:
+
+```bash
+NEXT_PUBLIC_CHAIN_ID=31337
+```
+
+And start the frontend:
+
+```bash
+pnpm start
+```
+
+## AI interpretation flow
+
+- Users type a question in the input field.
+- Tapping the crystal ball both **submits the question (local display)** and **requests the on-chain encrypted draw**.
+- After the user clicks **Decrypt**, the UI calls:
+  - `POST /api/tarot/analyze` (server-side)
+  - The OpenAI response is rendered under the spread.
+
+> Note: `OPENAI_API_KEY` is **server-only** and must be placed in `packages/nextjs/.env.local` and the dev server must be restarted after edits.
+
+## Card images (WebP)
+
+Optimized card images live in:
+
+- `packages/nextjs/public/cardpic_webp/`
+
+If you want to regenerate them from PNG sources:
+
+```bash
+pnpm --filter ./packages/nextjs images:webp -- --input ./utils/cardpic --publicOut ./public/cardpic_webp --quality 60 --maxWidth 900
+```
 
 ## Troubleshooting
 
-- **MetaMask nonce mismatch** – restarting Hardhat resets the chain. If MetaMask refuses to send txs, clear the activity tab or reset the account under Settings → Advanced.
-- **Cached contracts** – Chrome persists extension state; restart the browser when switching between local and Sepolia deployments.
-- **Module errors** – ensure `pnpm install` runs at the repo root so workspace dependencies (`packages/nextjs`, `packages/hardhat`) stay in sync.
-
-## Contributing
-
-1. Fork and create a feature branch.
-2. Keep UI changes consistent with the Shadow palette: near-black glass panels with #FFD208 accent.
-3. Run `pnpm lint` and `pnpm test` (where available) before opening a PR.
+- **Stuck on “interpreting…”**: usually means the server cannot reach OpenAI from your network. The API route times out and will surface an error. Check your network/proxy and restart `pnpm start` after setting `OPENAI_API_KEY`.
+- **RPC “Failed to fetch” in browser**: some public RPCs don’t allow browser CORS. Set `NEXT_PUBLIC_ALCHEMY_API_KEY` (recommended) or configure a CORS-friendly RPC in `packages/nextjs/scaffold.config.ts`.
+- **Deploy succeeded but frontend still points to old contract**: run `pnpm generate` (already included in `pnpm deploy:sepolia` / `pnpm deploy:localhost`).
 
 ## License
 
-Shadow is distributed under the BSD-3-Clause-Clear license. See [LICENSE](LICENSE) for full terms.
+BSD-3-Clause-Clear. See [LICENSE](LICENSE).
