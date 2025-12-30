@@ -5,6 +5,10 @@
 TarotZama is a **privacy-first Tarot oracle** powered by **Zama FHEVM**.
 Your cards are **drawn on-chain in encrypted form**, then **decrypted locally in your browser** — **only you can know the result**.
 
+## Live demo
+
+- **Try it now**: [tarotzama-nextjs.vercel.app](https://tarotzama-nextjs.vercel.app/)
+
 ## Why TarotZama
 
 - **Zama FHE on-chain draw**: the contract stores only **ciphertexts** — no plaintext card IDs ever hit the chain.
