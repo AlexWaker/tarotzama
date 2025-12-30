@@ -72,10 +72,19 @@ export const useTarotReading = ({ instance, initialMockChains }: UseTarotReading
     functionName: "getReading" as const,
     args: readingId !== null ? [readingId] : undefined,
     query: {
-      enabled: Boolean(readingId !== null && hasContract && ethersReadonlyProvider),
+      // Use wagmi's public client for reads; don't block on ethersReadonlyProvider which may be unset due to RPC issues.
+      enabled: Boolean(readingId !== null && hasContract),
       refetchOnWindowFocus: false,
     },
   });
+
+  useEffect(() => {
+    if (readingId === null) return;
+    if (!hasContract) return;
+    if (!readResult.refetch) return;
+    void readResult.refetch();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [readingId, hasContract]);
 
   useEffect(() => {
     if (!readResult.data) return;
@@ -98,7 +107,7 @@ export const useTarotReading = ({ instance, initialMockChains }: UseTarotReading
   useEffect(() => {
     if (readResult.error) {
       const error = readResult.error as Error;
-      setMessage(`获取占卜失败: ${error.message}`);
+      setMessage(`Failed to fetch reading: ${error.message}`);
     }
   }, [readResult.error]);
 
@@ -112,21 +121,21 @@ export const useTarotReading = ({ instance, initialMockChains }: UseTarotReading
   const requestReading = useCallback(
     async (spreadType: number) => {
       if (!canRequest) {
-        setMessage("钱包或合约不可用，请检查连接与网络。");
+        setMessage("Wallet or contract is unavailable. Please check your connection and network.");
         return;
       }
       const contract = getContract();
       if (!contract) {
-        setMessage("未能实例化塔罗合约。");
+        setMessage("Could not initialize the Tarot contract.");
         return;
       }
       setIsRequesting(true);
-      setMessage("正在呼唤神谕，耐心等待链上回应...");
+      setMessage("Calling the oracle—please wait for the on-chain response...");
       try {
         // Some RPCs / wallet providers fail to estimate gas for FHEVM-related calls (missing revert data).
         // Providing a manual gasLimit bypasses estimateGas.
         const tx = await contract.requestReading(spreadType, { gasLimit: 3_000_000n });
-        setMessage("占卜已提交，等待链上确认...");
+        setMessage("Reading submitted. Waiting for on-chain confirmation...");
         const receipt = await tx.wait();
 
         let newReadingId: bigint | null = null;
@@ -155,7 +164,7 @@ export const useTarotReading = ({ instance, initialMockChains }: UseTarotReading
 
         setReading(undefined);
         setReadingId(newReadingId);
-        setMessage("读取成功，点击“解密”解锁你的塔罗牌阵。");
+        setMessage('Reading ready. Click "Decrypt" to reveal your spread.');
       } catch (error) {
         setMessage(error instanceof Error ? error.message : String(error));
       } finally {

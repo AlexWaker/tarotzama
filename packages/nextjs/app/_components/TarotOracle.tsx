@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useFhevm } from "~~/lib/fhevm/react";
 import { useAccount } from "wagmi";
 import { RainbowKitCustomConnectButton } from "~~/components/helper/RainbowKitCustomConnectButton";
@@ -65,6 +65,12 @@ export const TarotOracle = () => {
   });
 
   const [spreadType, setSpreadType] = useState<number>(0);
+  const [question, setQuestion] = useState("");
+  const [submittedQuestion, setSubmittedQuestion] = useState("");
+  const [aiAnalysis, setAiAnalysis] = useState<string>("");
+  const [aiStatus, setAiStatus] = useState<"idle" | "loading" | "done" | "error">("idle");
+  const [aiError, setAiError] = useState<string>("");
+  const [aiForReadingId, setAiForReadingId] = useState<string>("");
 
   const tarot = useTarotReading({
     instance: fhevmInstance,
@@ -86,6 +92,63 @@ export const TarotOracle = () => {
     if (!tarot.reading?.timestamp) return undefined;
     return new Date(Number(tarot.reading.timestamp) * 1000).toLocaleString();
   }, [tarot.reading?.timestamp]);
+
+  const readingKey = tarot.readingId?.toString() ?? "";
+
+  useEffect(() => {
+    // Trigger analysis only for 5-card results, after decrypt, and only once per readingId.
+    if (!tarot.isDecrypted) return;
+    if (!resolvedCards || resolvedCards.length !== 5) return;
+    if (!submittedQuestion.trim()) return;
+    if (!readingKey) return;
+    if (aiStatus === "loading") return;
+    if (aiForReadingId === readingKey && aiStatus === "done") return;
+
+    const controller = new AbortController();
+    setAiStatus("loading");
+    setAiError("");
+    setAiAnalysis("");
+
+    (async () => {
+      try {
+        const payload = {
+          question: submittedQuestion.trim(),
+          spreadType: tarot.reading?.spreadType ?? spreadType,
+          readingId: readingKey,
+          cards: resolvedCards.map((c, index) => ({
+            index,
+            id: c.id,
+            name: c.name,
+            suit: c.suit,
+            reversed: Boolean(c.reversed),
+            keywords: c.keywords ?? [],
+            description: c.description ?? "",
+          })),
+        };
+
+        const res = await fetch("/api/tarot/analyze", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+          signal: controller.signal,
+        });
+        const json = (await res.json().catch(() => ({}))) as any;
+        if (!res.ok) {
+          throw new Error(json?.error || "AI analyze failed");
+        }
+        setAiForReadingId(readingKey);
+        setAiAnalysis(String(json.analysis ?? ""));
+        setAiStatus("done");
+      } catch (e: any) {
+        if (e?.name === "AbortError") return;
+        setAiStatus("error");
+        setAiError(e instanceof Error ? e.message : String(e));
+      }
+    })();
+
+    return () => controller.abort();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [readingKey, resolvedCards, submittedQuestion, tarot.isDecrypted]);
 
   const statusChips = [
     { label: "FHEVM", value: fhevmStatus ?? "Initializing" },
@@ -145,12 +208,40 @@ export const TarotOracle = () => {
           ))}
         </div>
 
+        <div className="tarot-section">
+          <div className="relative max-w-8xl mx-auto">
+            <div className="absolute -inset-[1px] rounded-2xl bg-gradient-to-r from-[#f8d5ff]/35 via-[#7bc6ff]/25 to-[#ff9b7b]/25 blur-sm" />
+            <div className="relative rounded-2xl border border-white/10 bg-black/25 backdrop-blur-xl px-4 py-3">
+              <div className="flex items-center justify-between gap-3 mb-2">
+                <span className="text-xs uppercase tracking-[0.35em] text-[#f3dbff]/70">Your question</span>
+                <span className="text-xs text-slate-400">{question.trim().length} chars</span>
+              </div>
+              <input
+                value={question}
+                onChange={e => setQuestion(e.target.value)}
+                placeholder="Type your question devoutly"
+                className={cx(
+                  "w-full bg-transparent text-slate-100 placeholder:text-slate-400 outline-none",
+                  "text-base",
+                )}
+              />
+              <p className="mt-2 text-xs text-slate-400">
+                Tapping the crystal ball will submit your text as well (shown locally only—never sent on-chain).
+              </p>
+            </div>
+          </div>
+        </div>
+
         <div className="flex flex-col items-center gap-6">
           <div className="tarot-crystal-wrapper">
             <button
               className={cx("tarot-crystal", tarot.isRequesting && "animate-pulse")}
               disabled={!tarot.canRequest}
-              onClick={() => tarot.requestReading(spreadType)}
+              onClick={() => {
+                const q = question.trim();
+                if (q) setSubmittedQuestion(q);
+                tarot.requestReading(spreadType);
+              }}
             >
               <span className="text-3xl">✨</span>
             </button>
@@ -179,6 +270,11 @@ export const TarotOracle = () => {
                 {tarot.readingId !== undefined ? `Reading #${tarot.readingId.toString()}` : "No draw yet"}
               </h2>
               {readingTimestamp && <p className="text-sm text-slate-300">{readingTimestamp}</p>}
+              {submittedQuestion ? (
+                <p className="text-sm text-slate-200 mt-2">
+                  <span className="text-slate-400">Question:</span> {submittedQuestion}
+                </p>
+              ) : null}
             </div>
             <div className="flex gap-3">
               <button className="tarot-btn-secondary" disabled={!tarot.canDecrypt} onClick={tarot.decryptReading}>
@@ -194,9 +290,15 @@ export const TarotOracle = () => {
 
         <section className="tarot-section">
           {resolvedCards ? (
-            <div className={cx("grid gap-6", resolvedCards.length >= 3 ? "md:grid-cols-3" : "md:grid-cols-2")}>
+            <div
+              className={cx(
+                "flex flex-nowrap justify-center gap-6",
+                // Keep 1/3/5 cards on a single row; allow horizontal scroll on smaller viewports.
+                "overflow-x-auto pb-2",
+              )}
+            >
               {resolvedCards.map((card, idx) => (
-                <article key={`${card.id}-${idx}`} className="tarot-card">
+                <article key={`${card.id}-${idx}`} className="tarot-card flex-none w-[220px]">
                   <header className="flex items-center justify-between">
                     <span className="text-sm text-slate-300">Card {idx + 1}</span>
                     <span
@@ -244,6 +346,28 @@ export const TarotOracle = () => {
             </div>
           )}
         </section>
+
+        {(
+          <section className="tarot-section space-y-3">
+            <div className="flex items-center justify-between flex-wrap gap-3">
+              <h3 className="text-xl font-semibold text-white">水晶球的启示</h3>
+              <span className="text-xs text-slate-400">基于你的问题 + {resolvedCards?.length} 张牌</span>
+            </div>
+            {!submittedQuestion.trim() ? (
+              <p className="text-sm text-slate-300">先在上方输入框填写你的疑问，然后点击水晶球提交并抽牌。</p>
+            ) : aiStatus === "loading" ? (
+              <p className="text-sm text-slate-300">水晶球正在解读中…</p>
+            ) : aiStatus === "error" ? (
+              <p className="text-sm text-rose-200">水晶球解读失败：{aiError}</p>
+            ) : aiStatus === "done" ? (
+              <div className="rounded-2xl border border-white/10 bg-black/25 backdrop-blur-xl p-4">
+                <pre className="whitespace-pre-wrap text-sm text-slate-100 leading-relaxed">{aiAnalysis}</pre>
+              </div>
+            ) : (
+              <p className="text-sm text-slate-300">解密完成后将自动生成解读。</p>
+            )}
+          </section>
+        )}
       </section>
     </div>
   );

@@ -1,6 +1,6 @@
 export type TarotSuit = "Major" | "Wands" | "Cups" | "Swords" | "Pentacles";
 
-// 新的塔罗牌结构：项目内统一使用这一套
+// Canonical tarot card shape used across the project.
 export type TarotCard = {
   id: number;
   name: string;
@@ -104,7 +104,7 @@ export const TAROT_DECK: readonly TarotCard[] = [
 
 const deckById = new Map<number, TarotCard>(TAROT_DECK.map(card => [card.id, card]));
 
-// 启动时校验：确保新牌库覆盖 0..77，且无重复/越界
+// Startup validation: ensure the deck fully covers 0..77 with no duplicates/out-of-range ids.
 (() => {
   const seen = new Set<number>();
   for (const card of TAROT_DECK) {
@@ -145,14 +145,14 @@ export const spreadLabels: Record<
     cards: number;
   }
 > = {
-  0: { title: "单牌直觉", subtitle: "当下的神谕讯号", cards: 1 },
-  1: { title: "三线流动", subtitle: "过去 / 现在 / 未来", cards: 3 },
-  2: { title: "五芒圣印", subtitle: "元素均衡与进化路径", cards: 5 },
+  0: { title: "Single-Card Intuition", subtitle: "Your message for the present moment", cards: 1 },
+  1: { title: "Threefold Flow", subtitle: "Past / Present / Future", cards: 3 },
+  2: { title: "Pentagram Seal", subtitle: "Elemental balance and your path of growth", cards: 5 },
 };
 
 export const formatSpreadTitle = (spreadType: number) => {
   const preset = spreadLabels[spreadType];
-  if (!preset) return "未知牌阵";
-  return `${preset.title}（${preset.cards}张）`;
+  if (!preset) return "Unknown spread";
+  return `${preset.title} (${preset.cards} card${preset.cards === 1 ? "" : "s"})`;
 };
 
