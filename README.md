@@ -1,11 +1,26 @@
 # TarotZama — FHEVM Tarot Oracle + AI Interpretation
 
-TarotZama is a tarot oracle dApp built on **Zama FHEVM**:
+![TarotZama Banner](banner.png)
 
-- **Cards are drawn on-chain in encrypted form** (the chain never sees your clear draw).
-- **Your wallet decrypts locally** via the Relayer SDK (only you can see the clear card IDs).
-- **Upright / reversed** is generated client-side (stable per reading) to avoid biased randomness in some chain environments.
-- **OpenAI-powered interpretation**: your question + the drawn cards are sent to a Next.js server route, and the analysis is shown under the spread.
+TarotZama is a tarot oracle dApp built on **Zama FHEVM**: encrypted on-chain draws, local decryption, and an optional AI interpretation layer.
+
+- **Encrypted draw on-chain**: the chain stores encrypted card IDs (no clear draw leaks).
+- **Local decryption**: your wallet decrypts via the Relayer SDK.
+- **Upright / reversed**: generated client-side (stable per reading) to avoid biased randomness in some chain environments.
+- **AI interpretation (OpenAI)**: your question + the drawn cards are analyzed server-side and rendered under the spread.
+
+## Table of contents
+
+- [Repository layout](#repository-layout)
+- [Architecture](#architecture)
+- [Quick start (frontend)](#quick-start-frontend)
+- [Environment variables](#environment-variables)
+- [Deploy the Tarot contract](#deploy-the-tarot-contract)
+- [AI interpretation flow](#ai-interpretation-flow)
+- [Card images (WebP)](#card-images-webp)
+- [Deploy to Vercel](#deploy-to-vercel)
+- [Troubleshooting](#troubleshooting)
+- [License](#license)
 
 ## Repository layout
 
@@ -18,11 +33,47 @@ tarotzama/
 └── README.md
 ```
 
-## Prerequisites
+## Architecture
 
-- Node.js **20+**
-- `pnpm` (via Corepack or installed manually)
-- A browser wallet (MetaMask / RainbowKit-compatible)
+### System overview
+
+```mermaid
+flowchart LR
+  U[User] -->|Question + Click crystal ball| UI[Next.js UI<br/>packages/nextjs]
+  UI -->|requestReading(spreadType)| CHAIN[(FHEVM Tarot.sol)]
+  CHAIN -->|Encrypted handles| UI
+
+  UI -->|Decrypt via Relayer SDK| RELAYER[Relayer SDK<br/>WASM + KMS params]
+  RELAYER -->|Clear card IDs| UI
+
+  UI -->|POST /api/tarot/analyze<br/>question + cards| API[Next.js Route Handler<br/>app/api/tarot/analyze]
+  API -->|Server-side fetch| OAI[OpenAI API]
+  OAI -->|Interpretation text| API --> UI
+```
+
+### End-to-end sequence
+
+```mermaid
+sequenceDiagram
+  participant User
+  participant UI as Next.js UI
+  participant Chain as FHEVM (Tarot.sol)
+  participant Relayer as Relayer SDK
+  participant API as /api/tarot/analyze
+  participant OpenAI
+
+  User->>UI: Enter question
+  User->>UI: Click crystal ball
+  UI->>Chain: requestReading(spreadType)
+  Chain-->>UI: ReadingRequested + encrypted handles
+  User->>UI: Click Decrypt
+  UI->>Relayer: decrypt(handles)
+  Relayer-->>UI: clear card IDs
+  UI->>API: POST question + cards
+  API->>OpenAI: chat completion
+  OpenAI-->>API: analysis text
+  API-->>UI: analysis text
+```
 
 ## Quick start (frontend)
 
@@ -38,21 +89,33 @@ Create `packages/nextjs/.env.local`:
 OPENAI_API_KEY=your_openai_key
 ```
 
-Then run:
+Run the app:
 
 ```bash
 pnpm start
 ```
 
-This starts the Next.js app (default `http://localhost:3000`).
+Default URL: `http://localhost:3000`.
 
-### Optional frontend env vars
+## Environment variables
 
-All optional (the app can still run without them in development, but RPC stability is better with your own keys):
+### Frontend (`packages/nextjs/.env.local`)
 
-- `NEXT_PUBLIC_ALCHEMY_API_KEY`: improves RPC reliability and avoids browser CORS issues with some public RPCs.
-- `NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID`: WalletConnect project id (a default is provided in code).
-- `NEXT_PUBLIC_CHAIN_ID`: set to `11155111` (Sepolia) or `31337` (local hardhat).
+| Variable | Required | Purpose |
+| --- | --- | --- |
+| `OPENAI_API_KEY` | Yes (for AI) | Server-only key used by `POST /api/tarot/analyze`. |
+| `NEXT_PUBLIC_ALCHEMY_API_KEY` | Recommended | More reliable browser RPC (avoids CORS issues on some public RPCs). |
+| `NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID` | Optional | WalletConnect project ID (a default exists in code). |
+| `NEXT_PUBLIC_CHAIN_ID` | Optional | `11155111` (Sepolia) or `31337` (local hardhat). |
+
+> After editing `.env.local`, restart the dev server.
+
+### Hardhat (`packages/hardhat/.env`)
+
+| Variable | Required | Purpose |
+| --- | --- | --- |
+| `MNEMONIC` | Yes | Deployer account mnemonic. |
+| `INFURA_API_KEY` | Yes (current config) | Sepolia RPC via Infura URL. |
 
 ## Deploy the Tarot contract
 
@@ -72,12 +135,12 @@ pnpm deploy:sepolia
 ```
 
 This runs:
-- `packages/hardhat` deployment to Sepolia
-- `pnpm generate` which regenerates TypeScript ABIs and updates `packages/nextjs/contracts/deployedContracts.ts`
+- deploy in `packages/hardhat`
+- `pnpm generate` which regenerates ABIs/typings and updates `packages/nextjs/contracts/deployedContracts.ts`
 
 ### Local hardhat
 
-Create `packages/hardhat/.env` (required because the hardhat config reads `MNEMONIC`):
+Create `packages/hardhat/.env`:
 
 ```bash
 MNEMONIC="test test test test test test test test test test test junk"
@@ -97,21 +160,13 @@ Then set in `packages/nextjs/.env.local`:
 NEXT_PUBLIC_CHAIN_ID=31337
 ```
 
-And start the frontend:
-
-```bash
-pnpm start
-```
-
 ## AI interpretation flow
 
 - Users type a question in the input field.
-- Tapping the crystal ball both **submits the question (local display)** and **requests the on-chain encrypted draw**.
-- After the user clicks **Decrypt**, the UI calls:
-  - `POST /api/tarot/analyze` (server-side)
-  - The OpenAI response is rendered under the spread.
+- Clicking the crystal ball both **submits the question (local display)** and **requests the on-chain encrypted draw**.
+- After clicking **Decrypt**, the UI calls `POST /api/tarot/analyze` and renders the response under the spread.
 
-> Note: `OPENAI_API_KEY` is **server-only** and must be placed in `packages/nextjs/.env.local` and the dev server must be restarted after edits.
+> `OPENAI_API_KEY` is **server-only** and never shipped to the browser.
 
 ## Card images (WebP)
 
@@ -119,16 +174,24 @@ Optimized card images live in:
 
 - `packages/nextjs/public/cardpic_webp/`
 
-If you want to regenerate them from PNG sources:
+To regenerate from PNG sources:
 
 ```bash
 pnpm --filter ./packages/nextjs images:webp -- --input ./utils/cardpic --publicOut ./public/cardpic_webp --quality 60 --maxWidth 900
 ```
 
+## Deploy to Vercel
+
+- Set **Root Directory** to `packages/nextjs`.
+- Ensure env vars are configured in Vercel:
+  - `OPENAI_API_KEY` (required for AI)
+  - `NEXT_PUBLIC_ALCHEMY_API_KEY` (recommended)
+- This repo uses pnpm; `packages/nextjs/vercel.json` is configured accordingly.
+
 ## Troubleshooting
 
-- **Stuck on “interpreting…”**: usually means the server cannot reach OpenAI from your network. The API route times out and will surface an error. Check your network/proxy and restart `pnpm start` after setting `OPENAI_API_KEY`.
-- **RPC “Failed to fetch” in browser**: some public RPCs don’t allow browser CORS. Set `NEXT_PUBLIC_ALCHEMY_API_KEY` (recommended) or configure a CORS-friendly RPC in `packages/nextjs/scaffold.config.ts`.
+- **Stuck on “interpreting…”**: the server may not be able to reach OpenAI from your environment. The API route uses a timeout and should surface an error message; check your network/proxy and confirm `OPENAI_API_KEY` is set in the runtime.
+- **RPC “Failed to fetch” in browser**: some public RPCs don’t allow browser CORS. Set `NEXT_PUBLIC_ALCHEMY_API_KEY` or add a CORS-friendly RPC override in `packages/nextjs/scaffold.config.ts`.
 - **Deploy succeeded but frontend still points to old contract**: run `pnpm generate` (already included in `pnpm deploy:sepolia` / `pnpm deploy:localhost`).
 
 ## License
