@@ -34,12 +34,12 @@ const fhevmInitSDK = async (options?: FhevmInitSDKOptions) => {
     throw new Error("window.relayerSDK is not available");
   }
   try {
-    const result = await window.relayerSDK.initSDK(options);
-    window.relayerSDK.__initialized__ = result;
-    if (!result) {
-      throw new Error("window.relayerSDK.initSDK failed.");
-    }
-    return true;
+  const result = await window.relayerSDK.initSDK(options);
+  window.relayerSDK.__initialized__ = result;
+  if (!result) {
+    throw new Error("window.relayerSDK.initSDK failed.");
+  }
+  return true;
   } catch (e) {
     const isIsolated =
       typeof window !== "undefined" && "crossOriginIsolated" in window ? Boolean((window as any).crossOriginIsolated) : false;

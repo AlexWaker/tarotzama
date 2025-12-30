@@ -145,14 +145,14 @@ INFURA_API_KEY="unused_for_local_but_required_by_config"
 
 Run a local node + deploy + generate:
 
-```bash
+   ```bash
 pnpm chain
-pnpm deploy:localhost
-```
+   pnpm deploy:localhost
+   ```
 
 Then set in `packages/nextjs/.env.local`:
 
-```bash
+   ```bash
 NEXT_PUBLIC_CHAIN_ID=31337
 ```
 
@@ -172,7 +172,7 @@ Optimized card images live in:
 
 To regenerate from PNG sources:
 
-```bash
+   ```bash
 pnpm --filter ./packages/nextjs images:webp -- --input ./utils/cardpic --publicOut ./public/cardpic_webp --quality 60 --maxWidth 900
 ```
 

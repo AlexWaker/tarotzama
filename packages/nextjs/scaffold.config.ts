@@ -13,7 +13,7 @@ export type ScaffoldConfig = BaseConfig;
 
 const rawAlchemyKey = process.env.NEXT_PUBLIC_ALCHEMY_API_KEY;
 if (!rawAlchemyKey) {
-  // eslint-disable-next-line no-console
+    // eslint-disable-next-line no-console
   console.warn("NEXT_PUBLIC_ALCHEMY_API_KEY is not set. Falling back to public RPCs (may be rate-limited).");
 }
 
