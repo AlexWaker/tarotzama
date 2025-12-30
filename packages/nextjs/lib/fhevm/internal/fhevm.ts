@@ -33,12 +33,21 @@ const fhevmInitSDK = async (options?: FhevmInitSDKOptions) => {
   if (!isFhevmWindowType(window, console.log)) {
     throw new Error("window.relayerSDK is not available");
   }
-  const result = await window.relayerSDK.initSDK(options);
-  window.relayerSDK.__initialized__ = result;
-  if (!result) {
-    throw new Error("window.relayerSDK.initSDK failed.");
+  try {
+    const result = await window.relayerSDK.initSDK(options);
+    window.relayerSDK.__initialized__ = result;
+    if (!result) {
+      throw new Error("window.relayerSDK.initSDK failed.");
+    }
+    return true;
+  } catch (e) {
+    const isIsolated =
+      typeof window !== "undefined" && "crossOriginIsolated" in window ? Boolean((window as any).crossOriginIsolated) : false;
+    const hint = isIsolated
+      ? "Browser is crossOriginIsolated=true, so this is likely a WASM asset/worker load issue."
+      : "Browser is crossOriginIsolated=false. If the SDK tries to use WASM threads/SharedArrayBuffer, it can fail and panic (unwrap_throw). Consider enabling COOP/COEP or forcing single-thread init.";
+    throwFhevmError("RELAYER_INITSDK_ERROR", `Relayer SDK initSDK failed. ${hint}`, e);
   }
-  return true;
 };
 
 function checkIsAddress(a: unknown): a is `0x${string}` {
@@ -213,6 +222,9 @@ export const createFhevmInstance = async (parameters: {
       // Prevents `Result::unwrap_throw()` when the SDK fails to resolve default asset locations.
       tfheParams: "/relayer/tfhe_bg.wasm",
       kmsParams: "/relayer/kms_lib_bg.wasm",
+      // Force single-thread mode for better compatibility on hosted environments (e.g., Vercel),
+      // where cross-origin isolation / SharedArrayBuffer requirements can differ from localhost.
+      thread: 1,
     });
     throwIfAborted();
     notify("sdk-initialized");
