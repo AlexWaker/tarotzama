@@ -35,22 +35,6 @@ tarotzama/
 
 ## Architecture
 
-### System overview
-
-```mermaid
-flowchart LR
-  U[User] -->|Question + Click crystal ball| UI[Next.js UI (packages/nextjs)]
-  UI -->|requestReading| CHAIN[(FHEVM Tarot contract)]
-  CHAIN -->|Encrypted handles| UI
-
-  UI -->|Decrypt via Relayer SDK| RELAYER[Relayer SDK (WASM + KMS params)]
-  RELAYER -->|Clear card IDs| UI
-
-  UI -->|POST /api/tarot/analyze (question + cards)| API[Next.js Route Handler (app/api/tarot/analyze)]
-  API -->|Server-side fetch| OAI[OpenAI API]
-  OAI -->|Interpretation text| API --> UI
-```
-
 ### End-to-end sequence
 
 ```mermaid
