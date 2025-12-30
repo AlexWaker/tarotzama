@@ -208,7 +208,12 @@ export const createFhevmInstance = async (parameters: {
 
   if (!isFhevmInitialized()) {
     notify("sdk-initializing");
-    await fhevmInitSDK();
+    await fhevmInitSDK({
+      // Explicit WASM paths for production deployments (e.g., Vercel).
+      // Prevents `Result::unwrap_throw()` when the SDK fails to resolve default asset locations.
+      tfheParams: "/relayer/tfhe_bg.wasm",
+      kmsParams: "/relayer/kms_lib_bg.wasm",
+    });
     throwIfAborted();
     notify("sdk-initialized");
   }
