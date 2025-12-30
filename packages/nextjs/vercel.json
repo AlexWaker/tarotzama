@@ -1,6 +1,6 @@
 {
-  "installCommand": "yarn install",
-  "buildCommand": "NODE_OPTIONS='--max-old-space-size=3000' NEXT_PRIVATE_BUILD_WORKERS=1 yarn run build",
+  "installCommand": "corepack enable && pnpm install --frozen-lockfile",
+  "buildCommand": "NODE_OPTIONS='--max-old-space-size=3000' NEXT_PRIVATE_BUILD_WORKERS=1 pnpm build",
   "env": {
     "NEXT_PRIVATE_BUILD_WORKERS": "1",
     "NODE_OPTIONS": "--max-old-space-size=3000"
